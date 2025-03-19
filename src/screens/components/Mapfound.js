@@ -405,7 +405,7 @@ const Mapfound = ({ timePeriod }) => {
         >
           <div>
             <h6>
-              {rankingEmojis[selectedBlog.rank - 1] || "?"} {selectedBlog.locationname} ({selectedBlog.count} times)
+              {rankingEmojis[selectedBlog.rank - 1] || "?"} {selectedBlog.locationname} ({selectedBlog.count} ครั้ง)
             </h6>
             <button
               style={{

@@ -1125,6 +1125,8 @@ button.unlock-button:hover {
     color: #555;
 }
 
+
+
 .modal {
     display: flex;
     justify-content: center;
@@ -1292,4 +1294,129 @@ button.unlock-button:hover {
     border-color: #007bff;
     outline: none;
     box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.blog-details-rp {
+    align-items: center;
+    position: relative;
+    flex-wrap: wrap;
+    /* Enable wrapping so content can stack */
+}
+
+.blog-img-rp img {
+    width: 100%;
+    height: 100%;
+    max-width: 290px;
+    max-height: 290px;
+    object-fit: cover;
+    border-radius: 15px;
+    border: 2px solid #ddd;
+}
+
+.blogs-info-rp {
+    flex-grow: 1;
+    font-size: 14px;
+    color: #333;
+}
+
+.blogs-info-rp p {
+    margin: 8px 0;
+    font-weight: 500;
+}
+
+.blogs-info-rp p:first-child {
+    font-size: 16px;
+    font-weight: 600;
+    color: #007bff;
+}
+
+.blogs-info-rp p span {
+    font-weight: 400;
+    color: #555;
+}
+
+/* Media query for small screens */
+@media (max-width: 768px) {
+    .blog-details {
+        flex-direction: column;
+        /* Stack elements vertically */
+        align-items: center;
+        /* Center items horizontally */
+        gap: 15px;
+        /* Adjust gap if needed */
+    }
+
+    .blog-profile,
+    .blogs-info {
+        width: 100%;
+        /* Make each section full-width */
+        max-width: none;
+        /* Remove any max-width setting for responsive layout */
+    }
+
+    .content-dashboard,
+    .content {
+        margin-left: 0;
+        /* กำหนดให้ไม่เว้นด้านซ้าย */
+        padding: 20px;
+    }
+
+    .wrapper {
+
+        margin-left: 0px;
+    }
+
+    .user-details {
+        display: flex;
+        flex-direction: column;
+        /* จัดการให้ข้อมูล user-info อยู่ใต้ภาพ */
+        align-items: center;
+    }
+
+    .user-profile {
+        margin-bottom: 20px;
+        /* เพิ่มระยะห่างระหว่างรูปภาพกับข้อมูลผู้ใช้ */
+    }
+
+    .profile-image {
+        margin-top: 70px;
+    }
+
+    .user-status {
+        text-align: center;
+        /* จัดให้ข้อมูลสถานะอยู่กลาง */
+    }
+
+    .action-buttons-container {
+        display: flex;
+        justify-content: center;
+        /* จัดปุ่มให้อยู่กลาง */
+        gap: 10px;
+        /* เพิ่มช่องว่างระหว่างปุ่ม */
+    }
+
+    .action-button,
+    .unlock-button {
+        justify-content: center;
+        width: 100%;
+        /* ให้ปุ่มเต็มความกว้างของ container */
+        max-width: 200px;
+        /* กำหนดความกว้างสูงสุด */
+    }
+
+    .blog-info-rp {
+        flex-direction: column;
+        /* Stack the items vertically on small screens */
+    }
+
+    .blog-img-rp {
+        width: 100%;
+        /* Ensure image takes full width */
+    }
+
+    .blogs-info-rp {
+        margin-top: 20px;
+        /* Add space between image and details */
+    }
+
 }

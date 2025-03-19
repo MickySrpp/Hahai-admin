@@ -22,6 +22,8 @@ function Dashboard() {
   const [totalBlogs, setTotalBlogs] = useState(0);
   const [createdAt, setCreatedAt] = useState('');
   const [loading, setLoading] = useState(true);
+  const [feedback, setFeedbacks] = useState('');
+  const [newfeedback, setNewFeedbacks] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [topSubtypes, setTopSubtypes] = useState([]);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -30,9 +32,16 @@ function Dashboard() {
 
   const [locations, setLocations] = useState([]);
   const [timePeriod, setTimePeriod] = useState("ทั้งหมด");
+  const [timePeriodForSubtypes, setTimePeriodForSubtypes] = useState("ทั้งหมด");
+  const [timePeriodForThreads, setTimePeriodForThreads] = useState("ทั้งหมด");
+  const [timePeriodForAllUser, setTimePeriodForAllUser] = useState("ทั้งหมด");
+  const [timePeriodForBanUsers, setTimePeriodForBanUsers] = useState("ทั้งหมด");
+  const [timePeriodForBlogs, setTimePeriodForBlogs] = useState("ทั้งหมด");
 
   const [receivedCount, setReceivedCount] = useState(0);
   const [notReceivedCount, setNotReceivedCount] = useState(0);
+
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   const navigate = useNavigate();
 
@@ -186,6 +195,33 @@ function Dashboard() {
     fetchUsers();
   }, []);
 
+  const handlePeriodForBanUsers = (e) => {
+    setTimePeriodForBanUsers(e.target.value);
+  };
+  //ระงับผู้ใช้
+  useEffect(() => {
+    const fetchBanUsers = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5000/ban-users?timePeriod=${timePeriodForBanUsers}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+          },
+        });
+
+        setSuspendedUsers(response.data.suspendedUsers);
+      } catch (error) {
+        console.error('Error fetching banned users:', error);
+      }
+    };
+
+    fetchBanUsers();
+  }, [timePeriodForBanUsers]); // เรียกข้อมูลใหม่เมื่อเลือกช่วงเวลาเปลี่ยน
+
+  //กระทู้ทั้งหมด
+  const handleForBlogsChange = (e) => {
+    setTimePeriodForBlogs(e.target.value);
+  };
+
   useEffect(() => {
     const fetchTotalBlogs = async () => {
       try {
@@ -193,32 +229,44 @@ function Dashboard() {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('authToken')}`,
           },
+          params: {
+            timePeriod: timePeriodForBlogs, // ส่ง timePeriod ไปใน request
+          },
         });
 
-        setTotalBlogs(response.data.totalBlogs);
+        setTotalBlogs(response.data.totalBlogs); // ตั้งค่าจำนวน totalBlogs
       } catch (error) {
         console.error('Error fetching total blogs:', error);
       }
     };
 
     fetchTotalBlogs();
-  }, []);
+  }, [timePeriodForBlogs]); // ดึงข้อมูลเมื่อ timePeriodForBlogs เปลี่ยน
+
+
+  //ชนิดสิ่งของ
+
+  const handleSubtypeTimePeriodChange = (e) => {
+    setTimePeriodForSubtypes(e.target.value);
+  };
 
   useEffect(() => {
-    const fetchTopSubtypes = async () => {
-      try {
-        const response = await axios.get("http://localhost:5000/blogs/top-object-subtypes");
-        setTopSubtypes(response.data);
-      } catch (error) {
-        console.error("Error fetching top subtypes:", error);
-      }
-    };
+    console.log("Current subtype time period:", timePeriodForSubtypes);
 
-    fetchTopSubtypes();
-  }, []);
+    const fetchUrl = `http://localhost:5000/blogs/top-object-subtypes?period=${timePeriodForSubtypes}`;
+    console.log("Fetching from:", fetchUrl);
+
+    fetch(fetchUrl)
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Fetched subtype data:", data);
+        setTopSubtypes(data.topSubtypes); // ต้องดึงค่า topSubtypes
+      })
+      .catch((error) => console.error("Error fetching top subtypes:", error));
+  }, [timePeriodForSubtypes]);
+
 
   //แผนที่
-
   const handleTimePeriodChange = (e) => {
     setTimePeriod(e.target.value);
   };
@@ -237,20 +285,26 @@ function Dashboard() {
   }, [timePeriod]); // จะทำงานทุกครั้งที่ timePeriod เปลี่ยน
 
 
+  //การรับสิ่งของ
+
+  const handlePeriodForThreadsChange = (e) => {
+    setTimePeriodForThreads(e.target.value); // 
+  };
 
   useEffect(() => {
     const fetchReceivedItemCounts = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/thread-counts'); // Call your API
-        setReceivedCount(response.data.receivedCount); // Set the count for received items
-        setNotReceivedCount(response.data.notReceivedCount); // Set the count for not received items
+        const response = await axios.get(`http://localhost:5000/thread-counts?period=${timePeriodForThreads}`); // ส่ง period ไปยัง API
+        setReceivedCount(response.data.receivedCount); // ตั้งค่าจำนวนที่ได้รับ
+        setNotReceivedCount(response.data.notReceivedCount); // ตั้งค่าจำนวนที่ยังไม่ได้รับ
       } catch (error) {
         console.error("Error fetching counts:", error);
       }
     };
 
-    fetchReceivedItemCounts(); // Fetch the data when the component mounts
-  }, []);
+    fetchReceivedItemCounts(); // เรียกใช้ฟังก์ชัน fetch เมื่อ timePeriodForThreads เปลี่ยนแปลง
+  }, [timePeriodForThreads]); // จะรันทุกครั้งที่ timePeriodForThreads เปลี่ยน
+
 
   const handleDropdownToggle = () => {
     setShowDropdown(!showDropdown);
@@ -274,14 +328,22 @@ function Dashboard() {
 
   return (
     <div className="dashboard">
-      <div className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
-        <div className="text-center mb-4">
-          <img
-            src="https://i.imgur.com/hcl6qVY.png"
-            alt="เมนู"
-            style={{ maxWidth: '80%', height: 'auto', paddingTop: 15, cursor: 'pointer' }}
-            onClick={handleClick}
-          />
+      <div className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''} ${isMobile ? 'mobile' : ''}`}>
+        <div className="top-bar">
+          <div className="hamburger-menu"
+            onClick={toggleSidebar}
+            style={{ color: isSidebarCollapsed ? '#fff' : '#000' }}>
+            ☰
+          </div>
+          <div className="logohahai text-center mb-4 ">
+            <img
+              className="imglogo"
+              src="https://i.imgur.com/hcl6qVY.png"
+              alt="เมนู"
+              style={{ maxWidth: '80%', height: 'auto', cursor: 'pointer' }}
+              onClick={handleClick}
+            />
+          </div>
         </div>
         <ul className="list-unstyled">
           <li className="menu-item">
@@ -321,7 +383,9 @@ function Dashboard() {
       </div>
 
       <div className="top-menu">
-        <div className="hamburger-menu" onClick={toggleSidebar}>
+        <div className="hamburger-menu"
+          onClick={toggleSidebar}
+          style={{ color: isSidebarCollapsed ? '#fff' : '#000' }}>
           ☰
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px', position: 'relative', marginLeft: 'auto' }}>
@@ -361,62 +425,151 @@ function Dashboard() {
       <div className={`content-dashboard ${isSidebarCollapsed ? 'full-screen' : ''}`}>
         <div className="header-content">
           <h1>Dashboard</h1>
-          <button className="create-report-btn">
-            <FaDownload size={14} style={{ marginRight: '8px' }} />
-            สร้างรายงาน
-          </button>
         </div>
         <p className="date-time">
           {currentDate.formattedDate} เวลา {currentDate.formattedTime}
         </p>
 
-
         <div className="container">
           <div className="row">
-            <div className="col-md-3">
-              <div className="info-box total-users">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <h4>ผู้ใช้ทั้งหมด</h4>
-                    <p>{totalUsers}</p>
+
+
+            <div className="col-lg-3 col-md-6 col-12 mb-3">
+              <div className="info-box active-users" style={{ paddingTop: "0px", }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginTop: "10px", }}>
+                    <div>
+                      <h4 style={{ paddingTop: "4px", }}>ผู้ใช้ที่กำลังใช้งาน</h4>
+                    </div>
                   </div>
-                  <FaUsers size={40} color="#d1d8e0" />
+
+                  <div style={{ display: 'flex', alignItems: 'center', width: '100%', paddingTop: '0px' }}>
+                    <p style={{ marginRight: '10px', paddingTop: '18px' }}>{onlineUsers}</p>
+                    <FaUsers size={40} color="#d1d8e0" style={{ marginLeft: 'auto' }} />
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="col-md-3">
-              <div className="info-box active-users">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <h4>ผู้ใช้ที่กำลังใช้งาน</h4>
-                    <p>{onlineUsers}</p>
+            <div className="col-lg-3 col-md-6 col-12 mb-3">
+              <div className="info-box total-users" style={{ paddingTop: "0px", }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginTop: "10px", }}>
+                    <div>
+                      <h4 style={{ paddingTop: "4px", }}>ผู้ใช้ทั้งหมด</h4>
+                    </div>
+                    {/* <div className="filter-container" style={{ marginLeft: 'auto' }}>
+                      <select
+                        value={timePeriodForAllUser}
+                        onChange={handlePeriodForAllUser}
+                        style={{
+                          padding: "2px",
+                          fontSize: "13px",
+                          border: "0px",
+                          backgroundColor: "#78B0FF",
+                          color: "white",
+                        }}
+                      >
+                        <option style={{ backgroundColor: "white", color: "black" }} value="ทั้งหมด">ทั้งหมด</option>
+                        <option style={{ backgroundColor: "white", color: "black" }} value="วันนี้">วันนี้</option>
+                        <option style={{ backgroundColor: "white", color: "black" }} value="เมื่อวาน">เมื่อวาน</option>
+                        <option style={{ backgroundColor: "white", color: "black" }} value="1สัปดาห์">1 สัปดาห์ที่แล้ว</option>
+                        <option style={{ backgroundColor: "white", color: "black" }} value="2สัปดาห์">2 สัปดาห์ที่แล้ว</option>
+                        <option style={{ backgroundColor: "white", color: "black" }} value="เดือนนี้">เดือนนี้</option>
+                        <option style={{ backgroundColor: "white", color: "black" }} value="เดือนที่แล้ว">เดือนที่แล้ว</option>
+                        <option style={{ backgroundColor: "white", color: "black" }} value="ปีนี้">ปีนี้</option>
+                        <option style={{ backgroundColor: "white", color: "black" }} value="ปีที่แล้ว">ปีที่แล้ว</option>
+                      </select>
+                    </div> */}
                   </div>
-                  <FaUsers size={40} color="#d1d8e0" />
+
+                  <div style={{ display: 'flex', alignItems: 'center', width: '100%', paddingTop: '0px' }}>
+                    <p style={{ marginRight: '10px', paddingTop: '18px' }}>{totalUsers}</p>
+                    <FaUsers size={40} color="#d1d8e0" style={{ marginLeft: 'auto' }} />
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="col-md-3">
-              <div className="info-box suspended-users">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <h4>ผู้ใช้ที่ถูกระงับ</h4>
-                    <p>{suspendedUsers}</p>
+
+            <div className="col-lg-3 col-md-6 col-12 mb-3">
+              <div className="info-box suspended-users" style={{ paddingTop: "0px", }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginTop: "10px", }}>
+                    <div>
+                      <h4 style={{ paddingTop: "4px", }}>ผู้ใช้ที่ถูกระงับ</h4>
+                    </div>
+                    <div className="filter-container" style={{ marginLeft: 'auto' }}>
+                      <select
+                        value={timePeriodForBanUsers}
+                        onChange={handlePeriodForBanUsers}
+                        style={{
+                          padding: "2px",
+                          fontSize: "13px",
+                          border: "0px",
+                          backgroundColor: "#78B0FF",
+                          color: "white",
+                        }}
+                      >
+                        <option style={{ backgroundColor: "white", color: "black" }} value="ทั้งหมด">ทั้งหมด</option>
+                        <option style={{ backgroundColor: "white", color: "black" }} value="วันนี้">วันนี้</option>
+                        <option style={{ backgroundColor: "white", color: "black" }} value="เมื่อวาน">เมื่อวาน</option>
+                        <option style={{ backgroundColor: "white", color: "black" }} value="1สัปดาห์">1 สัปดาห์ที่แล้ว</option>
+                        <option style={{ backgroundColor: "white", color: "black" }} value="2สัปดาห์">2 สัปดาห์ที่แล้ว</option>
+                        <option style={{ backgroundColor: "white", color: "black" }} value="เดือนนี้">เดือนนี้</option>
+                        <option style={{ backgroundColor: "white", color: "black" }} value="เดือนที่แล้ว">เดือนที่แล้ว</option>
+                        <option style={{ backgroundColor: "white", color: "black" }} value="ปีนี้">ปีนี้</option>
+                        <option style={{ backgroundColor: "white", color: "black" }} value="ปีที่แล้ว">ปีที่แล้ว</option>
+                      </select>
+                    </div>
                   </div>
-                  <FaUserSlash size={40} color="#d1d8e0" />
+
+                  <div style={{ display: 'flex', alignItems: 'center', width: '100%', paddingTop: '0px' }}>
+                    <p style={{ marginRight: '10px', paddingTop: '18px' }}>{suspendedUsers}</p>
+                    <FaUserSlash size={40} color="#d1d8e0" style={{ marginLeft: 'auto' }} />
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="col-md-3">
-              <div className="info-box total-blogs">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <h4>กระทู้ทั้งหมด</h4>
-                    <p>{totalBlogs}</p>
+            <div className="col-lg-3 col-md-6 col-12 mb-3">
+              <div className="info-box total-blogs" style={{ paddingTop: "0px", }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginTop: "10px", }}>
+                    <div>
+                      <h4 style={{ paddingTop: "4px", }}>กระทู้ทั้งหมด</h4>
+                    </div>
+                    <div className="filter-container" style={{ marginLeft: 'auto' }}>
+                      <select
+                        value={timePeriodForBlogs}
+                        onChange={handleForBlogsChange}
+                        style={{
+                          padding: "2px",
+                          fontSize: "13px",
+                          border: "0px",
+                          backgroundColor: "#78B0FF",
+                          color: "white",
+                        }}
+                      >
+                        <option style={{ backgroundColor: "white", color: "black" }} value="ทั้งหมด">ทั้งหมด</option>
+                        <option style={{ backgroundColor: "white", color: "black" }} value="วันนี้">วันนี้</option>
+                        <option style={{ backgroundColor: "white", color: "black" }} value="เมื่อวาน">เมื่อวาน</option>
+                        <option style={{ backgroundColor: "white", color: "black" }} value="1สัปดาห์">1 สัปดาห์ที่แล้ว</option>
+                        <option style={{ backgroundColor: "white", color: "black" }} value="2สัปดาห์">2 สัปดาห์ที่แล้ว</option>
+                        <option style={{ backgroundColor: "white", color: "black" }} value="เดือนนี้">เดือนนี้</option>
+                        <option style={{ backgroundColor: "white", color: "black" }} value="เดือนที่แล้ว">เดือนที่แล้ว</option>
+                        <option style={{ backgroundColor: "white", color: "black" }} value="ปีนี้">ปีนี้</option>
+                        <option style={{ backgroundColor: "white", color: "black" }} value="ปีที่แล้ว">ปีที่แล้ว</option>
+                      </select>
+                    </div>
                   </div>
-                  <FaBlog size={40} color="#d1d8e0" />
+
+
+                  <div style={{ display: 'flex', alignItems: 'center', width: '100%', paddingTop: '0px' }}>
+
+                    <p style={{ marginRight: '10px', paddingTop: '18px' }}>{totalBlogs}</p>
+                    <FaBlog size={40} color="#d1d8e0" style={{ marginLeft: 'auto' }} />
+                  </div>
                 </div>
               </div>
             </div>
@@ -424,11 +577,37 @@ function Dashboard() {
           </div>
 
           <div className="container-reported">
-            <div className="top-reported-items">
-              <div style={{ backgroundColor: "#f9fafc", padding: "5px", borderRadius: "8px" }}>
-                <h2 style={{ fontSize: "15px", fontWeight: "600", marginBottom: "20px", color: "#4e73df" }}>
-                  สิ่งของที่ถูกรายงานบ่อยที่สุด
-                </h2>
+            <div className="top-reported-items" style={{ paddingTop: "5px", }}>
+              <div style={{ backgroundColor: "#f9fafc", padding: "5px", paddingTop: "0px", borderRadius: "8px" }}>
+                <div className="header-container" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <h2 style={{ fontSize: "15px", fontWeight: "600", marginBottom: "20px", marginTop: "20px", color: "#4e73df" }}>
+                    สิ่งของที่ถูกรายงานบ่อยที่สุด
+                  </h2>
+                  <div className="filter-container">
+                    <select
+                      value={timePeriodForSubtypes}
+                      onChange={handleSubtypeTimePeriodChange}
+                      style={{
+                        padding: "5px",
+                        fontSize: "14px",
+                        border: "0px",
+                        backgroundColor: "#78B0FF",
+                        color: "white",
+                      }}
+                    >
+                      <option style={{ backgroundColor: "white", color: "black" }} value="ทั้งหมด">ทั้งหมด</option>
+                      <option style={{ backgroundColor: "white", color: "black" }} value="วันนี้">วันนี้</option>
+                      <option style={{ backgroundColor: "white", color: "black" }} value="เมื่อวาน">เมื่อวาน</option>
+                      <option style={{ backgroundColor: "white", color: "black" }} value="1สัปดาห์">1 สัปดาห์ที่แล้ว</option>
+                      <option style={{ backgroundColor: "white", color: "black" }} value="2สัปดาห์">2 สัปดาห์ที่แล้ว</option>
+                      <option style={{ backgroundColor: "white", color: "black" }} value="เดือนนี้">เดือนนี้</option>
+                      <option style={{ backgroundColor: "white", color: "black" }} value="เดือนที่แล้ว">เดือนที่แล้ว</option>
+                      <option style={{ backgroundColor: "white", color: "black" }} value="ปีนี้">ปีนี้</option>
+                      <option style={{ backgroundColor: "white", color: "black" }} value="ปีที่แล้ว">ปีที่แล้ว</option>
+                    </select>
+                  </div>
+
+                </div>
                 {topSubtypes.length > 0 ? (
                   <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
                     {topSubtypes.map((subtype, index) => (
@@ -466,14 +645,40 @@ function Dashboard() {
                   </ul>
                 ) : (
                   <p style={{ textAlign: "center", color: "#6d7c8b", fontSize: "14px", marginTop: "20px" }}>
-                    No reported items available.
+                    ไม่มีสิ่งของที่ถูกแจ้งพบ
                   </p>
                 )}
               </div>
             </div>
 
-            <div className="thread-category">
-              <h2 style={{ fontSize: "15px", fontWeight: "600", marginBottom: "20px", color: "#4e73df" }}>การรับสิ่งของ</h2>
+            <div className="thread-category" style={{ paddingTop: "0px", }}>
+              <div className="header-container" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", }}>
+                <h2 style={{ fontSize: "15px", fontWeight: "600", marginBottom: "20px", marginTop: "20px", color: "#4e73df" }}>การรับสิ่งของ</h2>
+                <div className="filter-container">
+                  <select
+                    value={timePeriodForThreads}
+                    onChange={handlePeriodForThreadsChange}
+                    style={{
+                      padding: "5px",
+                      fontSize: "14px",
+                      border: "0px",
+                      backgroundColor: "#78B0FF",
+                      color: "white",
+                    }}
+                  >
+                    <option style={{ backgroundColor: "white", color: "black" }} value="ทั้งหมด">ทั้งหมด</option>
+                    <option style={{ backgroundColor: "white", color: "black" }} value="วันนี้">วันนี้</option>
+                    <option style={{ backgroundColor: "white", color: "black" }} value="เมื่อวาน">เมื่อวาน</option>
+                    <option style={{ backgroundColor: "white", color: "black" }} value="1สัปดาห์">1 สัปดาห์ที่แล้ว</option>
+                    <option style={{ backgroundColor: "white", color: "black" }} value="2สัปดาห์">2 สัปดาห์ที่แล้ว</option>
+                    <option style={{ backgroundColor: "white", color: "black" }} value="เดือนนี้">เดือนนี้</option>
+                    <option style={{ backgroundColor: "white", color: "black" }} value="เดือนที่แล้ว">เดือนที่แล้ว</option>
+                    <option style={{ backgroundColor: "white", color: "black" }} value="ปีนี้">ปีนี้</option>
+                    <option style={{ backgroundColor: "white", color: "black" }} value="ปีที่แล้ว">ปีที่แล้ว</option>
+                  </select>
+                </div>
+              </div>
+
               <div className="counts-container">
                 <div className="count-box">
                   <h3>สิ่งของถูกรับไปแล้ว</h3>
@@ -526,6 +731,7 @@ function Dashboard() {
 
 
             <main className="map-container">
+              {/* แผนที่ */}
               <Mapfound timePeriod={timePeriod} />
             </main>
 

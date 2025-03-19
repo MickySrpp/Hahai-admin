@@ -25,9 +25,15 @@ function ReportDetail() {
     const [footerVisible, setFooterVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
+
+
+    const [feedback, setFeedbacks] = useState('');
+    const [newfeedback, setNewFeedbacks] = useState('');
     const token = localStorage.getItem('authToken');
 
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
     const toggleSidebar = () => {
         setIsSidebarCollapsed(!isSidebarCollapsed);
@@ -227,17 +233,29 @@ function ReportDetail() {
         return <div>{errorMessage}</div>;
     }
 
+    const handleClick = () => {
+        navigate('/dashboard');
+    };
+
     return (
         <div className="reportdetail">
-            <div className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
-                <div className="text-center mb-4">
-                    <img
-                        src="https://i.imgur.com/hcl6qVY.png"
-                        alt="เมนู"
-                        style={{ maxWidth: '80%', height: 'auto', paddingTop: 15 }}
-                    />
+            <div className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''} ${isMobile ? 'mobile' : ''}`}>
+                <div className="top-bar">
+                    <div className="hamburger-menu"
+                        onClick={toggleSidebar}
+                        style={{ color: isSidebarCollapsed ? '#fff' : '#000' }}>
+                        ☰
+                    </div>
+                    <div className="logohahai text-center mb-4 ">
+                        <img
+                            className="imglogo"
+                            src="https://i.imgur.com/hcl6qVY.png"
+                            alt="เมนู"
+                            style={{ maxWidth: '80%', height: 'auto', cursor: 'pointer' }}
+                            onClick={handleClick}
+                        />
+                    </div>
                 </div>
-
                 <ul className="list-unstyled">
                     <li className="menu-item">
                         <Link to="/dashboard" className="menu-link">
@@ -270,15 +288,15 @@ function ReportDetail() {
                                 {notifications > 0 && (
                                     <span className="notification-badge">{notifications}</span> // แสดงจำนวนการแจ้งเตือน
                                 )}</h5>
-
                         </Link>
                     </li>
                 </ul>
             </div>
 
-            {/* Top Menu */}
             <div className="top-menu">
-                <div className="hamburger-menu" onClick={toggleSidebar}>
+                <div className="hamburger-menu"
+                    onClick={toggleSidebar}
+                    style={{ color: isSidebarCollapsed ? '#fff' : '#000' }}>
                     ☰
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px', position: 'relative', marginLeft: 'auto' }}>
@@ -333,7 +351,8 @@ function ReportDetail() {
                     </nav>
                 </div>
 
-                <div className={`content ${isSidebarCollapsed ? 'full-screen' : ''}`}>
+                <div className={`content ${isSidebarCollapsed ? 'full-screen' : ''} ${isMobile ? 'mobile' : ''}`}>
+
                     <h1>รายละเอียดกระทู้ไม่พึงประสงค์</h1>
                     {report ? (
                         <>
@@ -349,20 +368,28 @@ function ReportDetail() {
                             </div>
 
                             <div className="blog-info">
-                                <div className="blog-image">
-                                    <img src={report.blog?.obj_picture} alt="ไม่พบรูปภาพสิ่งของ" />
-                                </div>
-                                <div className="blog-details">
-                                    <h3>รายละเอียดกระทู้</h3>
-                                    <p><strong>ประเภทกระทู้:</strong> {report.blog?.object_subtype || 'ไม่มีข้อมูล'}</p>
-                                    <p><strong>สี:</strong> {report.blog?.color || 'ไม่มีข้อมูล'}</p>
-                                    <p><strong>สถานที่:</strong> {report.blog?.location || 'ไม่มีข้อมูล'}</p>
-                                    <p><strong>หมายเหตุ:</strong> {report.blog?.note || 'ไม่มีข้อมูล'}</p>
-                                    <p><strong>วันที่แจ้งพบสิ่งของ:</strong> {formatThaiDate(report.blog?.createdAt) || 'ไม่มีข้อมูล'}</p>
-                                    <p><strong>สถานะการรับสิ่งของ:</strong> {report.blog?.received === false ? 'สิ่งของยังไม่ได้ถูกรับ' : report.blog?.received === true ? 'สิ่งของถูกรับไปแล้ว' : 'ไม่มีข้อมูล'}</p>
-                                    <p><strong>เจ้าของกระทู้:</strong> {`${report.blogOwner?.firstname} ${report.blogOwner?.lastname}` || 'ไม่มีข้อมูล'}</p>
+                                <div className="row">
+                                    <div className="col-12 col-md-4">
+                                        <div className="blog-img-rp">
+                                            <img src={report.blog?.obj_picture} alt="ไม่พบรูปภาพสิ่งของ" className="img-fluid mx-auto d-block" />
+                                        </div>
+                                    </div>
+                                    <div className="col-12 col-md-8">
+                                        <div className="blogs-info-rp">
+                                            <h3>รายละเอียดกระทู้</h3>
+                                            <p><strong>ประเภทกระทู้:</strong> {report.blog?.object_subtype || 'ไม่มีข้อมูล'}</p>
+                                            <p><strong>สี:</strong> {report.blog?.color || 'ไม่มีข้อมูล'}</p>
+                                            <p><strong>สถานที่:</strong> {report.blog?.location || 'ไม่มีข้อมูล'}</p>
+                                            <p><strong>หมายเหตุ:</strong> {report.blog?.note || 'ไม่มีข้อมูล'}</p>
+                                            <p><strong>วันที่แจ้งพบสิ่งของ:</strong> {formatThaiDate(report.blog?.createdAt) || 'ไม่มีข้อมูล'}</p>
+                                            <p><strong>สถานะการรับสิ่งของ:</strong> {report.blog?.received === false ? 'สิ่งของยังไม่ได้ถูกรับ' : report.blog?.received === true ? 'สิ่งของถูกรับไปแล้ว' : 'ไม่มีข้อมูล'}</p>
+                                            <p><strong>เจ้าของกระทู้:</strong> {`${report.blogOwner?.firstname} ${report.blogOwner?.lastname}` || 'ไม่มีข้อมูล'}</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+
+
                         </>
                     ) : (
                         <p>ไม่พบข้อมูลกระทู้ไม่พึงประสงค์ หรือข้อมูลผู้ใช้ไม่ครบถ้วน</p>
@@ -381,6 +408,7 @@ function ReportDetail() {
                         >
                             เจ้าของกระทู้
                         </button>
+
 
                     </div>
                 </div>

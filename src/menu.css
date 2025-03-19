@@ -341,3 +341,104 @@
     visibility: visible; 
 }
 
+.hamburger-menu {
+    display: none;
+    /* ซ่อนเริ่มต้น */
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        transform: translateX(-100%);
+    }
+
+    .sidebar.collapsed {
+        transform: translateX(0);
+    }
+
+    .top-menu {
+        left: 0;
+    }
+
+    .top-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0px;
+        width: 100%;
+    }
+
+    .logohahai .imglogo {
+        width: 50%;
+      }
+
+    .hamburger-menu {
+        display: block;
+        /* แสดงเมื่อหน้าจอเล็ก */
+        font-size: 24px;
+        cursor: pointer;
+        padding-right: 10px;
+        margin-left: auto;
+        /* ชิดขวา */
+        transition: color 0.3s ease-in-out;
+    }
+
+    /* Footer for mobile screens */
+    .footer {
+        width: 100%;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        z-index: 5;
+        /* อยู่ด้านหลัง Sidebar */
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+        visibility: hidden;
+        /* ซ่อนฟุตเตอร์เมื่อ Sidebar เปิด */
+    }
+
+    .footer-content-fixed {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 50px;
+        background-color: #d6d6d6;
+        font-size: 14px;
+        color: gray;
+        z-index: 5;
+        padding: 0;
+        line-height: 50px;
+        text-align: center;
+        box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+        transition: left 0.3s ease, width 0.3s ease;
+        visibility: hidden;
+        /* ซ่อนฟุตเตอร์เมื่อ Sidebar เปิด */
+    }
+
+    .footer-content {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 50px;
+        background-color: #d6d6d6;
+        font-size: 14px;
+        color: gray;
+        z-index: 100;
+        /* อยู่เหนือ Sidebar */
+        padding: 0;
+        line-height: 50px;
+        text-align: center;
+        box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+        transition: left 0.3s ease, width 0.3s ease;
+    }
+
+    /* ฟุตเตอร์จะแสดงเมื่อ Sidebar ถูกย่อ */
+    .sidebar.collapsed~.footer-content,
+    .sidebar.collapsed~.footer {
+        visibility: visible;
+        /* แสดงฟุตเตอร์เมื่อ Sidebar ถูกย่อ */
+    }
+
+
+}

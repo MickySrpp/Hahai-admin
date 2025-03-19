@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { FaSearch, FaChevronRight, FaChevronLeft, FaTrash, FaBell, FaUserCircle, FaHome, FaUsers, FaFlag, FaTag, FaComments, FaEye, FaCaretDown, FaComment, FaReply } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
@@ -29,6 +29,10 @@ function Feedback() {
   const navigate = useNavigate();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const [newfeedback, setNewFeedbacks] = useState('');
+
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
@@ -196,12 +200,62 @@ function Feedback() {
   };
 
 
-  const handleSearchChange = (e) => setSearchTerm(e.target.value);
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = feedbacks.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(totalCount / itemsPerPage);
+  const formatThaiDate = (dateString) => {
+    const date = new Date(dateString);
+    const thaiMonths = [
+      'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+      'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+    ];
+    const day = date.getDate();
+    const month = thaiMonths[date.getMonth()];
+    const year = date.getFullYear() + 543;
+    return `${day} ${month} ${year}`;
+  };
+
+  const statusMapping = {
+    pending: 'รอดำเนินการ',
+    in_progress: 'กำลังดำเนินการ',
+    resolved: 'แก้ไขแล้ว',
+    closed: 'ปิด',
+  };
+
+  const filteredFeedbacks = useMemo(() => {
+    return feedbacks
+      .map((feedback, index) => ({
+        ...feedback,
+        realIndex: index + 1,
+      }))
+      .filter(feedback => {
+        const formattedDate = formatThaiDate(feedback.createdAt);
+        const statusTranslation = statusMapping[feedback.status];
+        return (
+          feedback.user?.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          feedback.user?.firstname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          feedback.user?.lastname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          feedback.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          feedback.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (statusTranslation && statusTranslation.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          feedback.reply?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          formattedDate.includes(searchTerm)
+        );
+      });
+  }, [feedbacks, searchTerm]);
+
+
+
+
+  const currentItems = useMemo(() => {
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    return filteredFeedbacks.slice(indexOfFirstItem, indexOfLastItem);
+  }, [filteredFeedbacks, currentPage, itemsPerPage]);
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const totalPages = Math.ceil(filteredFeedbacks.length / itemsPerPage);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
@@ -217,17 +271,6 @@ function Feedback() {
     };
   }, []);
 
-  const formatThaiDate = (dateString) => {
-    const date = new Date(dateString);
-    const thaiMonths = [
-      'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
-      'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
-    ];
-    const day = date.getDate();
-    const month = thaiMonths[date.getMonth()];
-    const year = date.getFullYear() + 543;
-    return `${day} ${month} ${year}`;
-  };
 
   const handleStatusChange = async (feedbackId, newStatus) => {
     const updatedFeedbacks = feedbacks.map(feedback =>
@@ -246,17 +289,29 @@ function Feedback() {
     }
   };
 
+  const handleClick = () => {
+    navigate('/dashboard');
+  };
+
   return (
     <div className="feedback">
-      <div className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
-        <div className="text-center mb-4">
-          <img
-            src="https://i.imgur.com/hcl6qVY.png"
-            alt="เมนู"
-            style={{ maxWidth: '80%', height: 'auto', paddingTop: 15 }}
-          />
+      <div className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''} ${isMobile ? 'mobile' : ''}`}>
+        <div className="top-bar">
+          <div className="hamburger-menu"
+            onClick={toggleSidebar}
+            style={{ color: isSidebarCollapsed ? '#fff' : '#000' }}>
+            ☰
+          </div>
+          <div className="logohahai text-center mb-4 ">
+            <img
+              className="imglogo"
+              src="https://i.imgur.com/hcl6qVY.png"
+              alt="เมนู"
+              style={{ maxWidth: '80%', height: 'auto', cursor: 'pointer' }}
+              onClick={handleClick}
+            />
+          </div>
         </div>
-
         <ul className="list-unstyled">
           <li className="menu-item">
             <Link to="/dashboard" className="menu-link">
@@ -287,16 +342,17 @@ function Feedback() {
               <FaComments size={20} />
               <h5>จัดการรายการปัญหา
                 {notifications > 0 && (
-                <span className="notification-badge">{notifications}</span> // แสดงจำนวนการแจ้งเตือน
-              )}</h5>
-
+                  <span className="notification-badge">{notifications}</span> // แสดงจำนวนการแจ้งเตือน
+                )}</h5>
             </Link>
           </li>
         </ul>
       </div>
 
       <div className="top-menu">
-        <div className="hamburger-menu" onClick={toggleSidebar}>
+        <div className="hamburger-menu"
+          onClick={toggleSidebar}
+          style={{ color: isSidebarCollapsed ? '#fff' : '#000' }}>
           ☰
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px', position: 'relative', marginLeft: 'auto' }}>
@@ -332,7 +388,7 @@ function Feedback() {
           </div>
         </div>
       </div>
-      
+
       <div className="wrapper">
         <div className="breadcrumb-container">
           <nav aria-label="breadcrumb">

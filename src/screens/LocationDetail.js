@@ -9,10 +9,13 @@ import '../hahai.css';
 import '../menu.css';
 
 function LocationDetail() {
-    const [adminUsername, setAdminUsername] = useState('');
-    const [lastLoginTime, setLastLoginTime] = useState('');
-    const [isLoggedIn, setIsLoggedIn] = useState(true);
-    const [createdAt, setCreatedAt] = useState('');
+  const [profileImage, setProfileImage] = useState(null);
+  const [originalProfileImage, setOriginalProfileImage] = useState(null);
+  const [adminUsername, setAdminUsername] = useState('');
+  const [lastLoginTime, setLastLoginTime] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [currentDate, setCurrentDate] = useState('');
+  const [createdAt, setCreatedAt] = useState('');
     const [showDropdown, setShowDropdown] = useState(false);
     const [notifications, setNotifications] = useState(3);
     const [users, setUsers] = useState([]);
@@ -29,7 +32,11 @@ function LocationDetail() {
 
     const { locationname } = useParams();
     const [blogs, setBlogs] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
 
+    const [feedback, setFeedbacks] = useState('');
+    const [newfeedback, setNewFeedbacks] = useState('');
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
     const navigate = useNavigate();
 
@@ -85,31 +92,33 @@ function LocationDetail() {
     const fetchAdminInfo = async () => {
         const token = localStorage.getItem('authToken');
         if (!token) {
-            setLoading(false);
-            setErrorMessage('ไม่พบผู้ใช้ โปรดเข้าสู่ระบบใหม่');
-            return;
+          setLoading(false);
+          setErrorMessage('ไม่พบผู้ใช้ โปรดเข้าสู่ระบบใหม่');
+          return;
         }
-
+    
         try {
-            const response = await axios.get('http://localhost:5000/admin', {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-            setAdminUsername(response.data.username);
-            setLastLoginTime(response.data.lastLoginTime);
-            setIsLoggedIn(response.data.isLoggedIn);
-            setCreatedAt(response.data.createdAt);
-            setLoading(false);
+          const response = await axios.get('http://localhost:5000/admin', {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          setAdminUsername(response.data.username);
+          setLastLoginTime(response.data.lastLoginTime);
+          setIsLoggedIn(response.data.isLoggedIn);
+          setCreatedAt(response.data.createdAt);
+          setProfileImage(response.data.profileImage);
+          setOriginalProfileImage(response.data.profileImage);
+          setLoading(false);
         } catch (error) {
-            setErrorMessage('เกิดข้อผิดพลาดในการดึงข้อมูลแอดมิน');
-            setLoading(false);
+          setErrorMessage('เกิดข้อผิดพลาดในการดึงข้อมูลแอดมิน');
+          setLoading(false);
         }
-    };
-
-    useEffect(() => {
+      };
+    
+      useEffect(() => {
         fetchAdminInfo();
-    }, []);
+      }, []);
 
     useEffect(() => {
         const fetchBlogs = async () => {
@@ -130,10 +139,6 @@ function LocationDetail() {
         };
         fetchBlogs();
     }, [locationname]);
-
-
-
-
 
     const filteredBlogs = useMemo(() => {
         return blogs
@@ -183,21 +188,31 @@ function LocationDetail() {
     };
 
 
-
+    const handleClick = () => {
+        navigate('/dashboard');
+    };
 
 
 
     return (
         <div className="member">
-            <div className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
-                <div className="text-center mb-4">
-                    <img
-                        src="https://i.imgur.com/hcl6qVY.png"
-                        alt="เมนู"
-                        style={{ maxWidth: '80%', height: 'auto', paddingTop: 15 }}
-                    />
+            <div className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''} ${isMobile ? 'mobile' : ''}`}>
+                <div className="top-bar">
+                    <div className="hamburger-menu"
+                        onClick={toggleSidebar}
+                        style={{ color: isSidebarCollapsed ? '#fff' : '#000' }}>
+                        ☰
+                    </div>
+                    <div className="logohahai text-center mb-4 ">
+                        <img
+                            className="imglogo"
+                            src="https://i.imgur.com/hcl6qVY.png"
+                            alt="เมนู"
+                            style={{ maxWidth: '80%', height: 'auto', cursor: 'pointer' }}
+                            onClick={handleClick}
+                        />
+                    </div>
                 </div>
-
                 <ul className="list-unstyled">
                     <li className="menu-item">
                         <Link to="/dashboard" className="menu-link">
@@ -226,23 +241,43 @@ function LocationDetail() {
                     <li className="menu-item">
                         <Link to="/feedback" className="menu-link">
                             <FaComments size={20} />
-                            <h5>แจ้งปัญหาการใช้งาน</h5>
+                            <h5>จัดการรายการปัญหา
+                                {notifications > 0 && (
+                                    <span className="notification-badge">{notifications}</span> // แสดงจำนวนการแจ้งเตือน
+                                )}</h5>
                         </Link>
                     </li>
                 </ul>
             </div>
 
             <div className="top-menu">
-                <div className="hamburger-menu" onClick={toggleSidebar}>
+                <div className="hamburger-menu"
+                    onClick={toggleSidebar}
+                    style={{ color: isSidebarCollapsed ? '#fff' : '#000' }}>
                     ☰
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px', position: 'relative', marginLeft: 'auto' }}>
-                    <div className="notification-icon" onClick={handleNotifications}>
-                        <FaBell size={25} />
-                        {notifications > 0 && <span className="notification-badge">{notifications}</span>}
-                    </div>
+                    {/* <div className="notification-icon" onClick={handleNotifications}>
+                       <FaBell size={25} />
+                       {notifications > 0 && <span className="notification-badge">{notifications}</span>}
+                     </div> */}
                     <div className="profile-icon" onClick={handleDropdownToggle}>
-                        <FaUserCircle size={30} />
+                        {isLoading ? (
+                            <p>กำลังโหลด...</p>
+                        ) : profileImage ? (
+                            <img
+                                src={profileImage}
+                                alt="Profile"
+                                style={{
+                                    width: '30px',
+                                    height: '30px',
+                                    borderRadius: '50%',
+                                    objectFit: 'cover',
+                                }}
+                            />
+                        ) : (
+                            <FaUserCircle size={30} />
+                        )}
                         <span style={{ marginLeft: '10px', fontSize: '14px', color: '#006AFF' }}>
                             {adminUsername}
                             <FaCaretDown size={12} style={{ marginLeft: '5px', verticalAlign: 'middle' }} />
@@ -254,6 +289,7 @@ function LocationDetail() {
                     </div>
                 </div>
             </div>
+
 
             <div className={`wrapper ${isSidebarCollapsed ? 'full-screen' : ''}`}>
                 <div className="breadcrumb-container">

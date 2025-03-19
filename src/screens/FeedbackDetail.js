@@ -21,6 +21,8 @@ function FeedbackDetail() {
     const [footerVisible, setFooterVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
     const handleScroll = () => {
         const bottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight;
         if (bottom) {
@@ -152,17 +154,29 @@ function FeedbackDetail() {
         return <div className="loading-container"><div className="loading-spinner"></div></div>;
     }
 
+    const handleClick = () => {
+        navigate('/dashboard');
+    };
+
     return (
         <div className="feedback-detail">
-            <div className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
-                <div className="text-center mb-4">
-                    <img
-                        src="https://i.imgur.com/hcl6qVY.png"
-                        alt="เมนู"
-                        style={{ maxWidth: '80%', height: 'auto', paddingTop: 15 }}
-                    />
+            <div className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''} ${isMobile ? 'mobile' : ''}`}>
+                <div className="top-bar">
+                    <div className="hamburger-menu"
+                        onClick={toggleSidebar}
+                        style={{ color: isSidebarCollapsed ? '#fff' : '#000' }}>
+                        ☰
+                    </div>
+                    <div className="logohahai text-center mb-4 ">
+                        <img
+                            className="imglogo"
+                            src="https://i.imgur.com/hcl6qVY.png"
+                            alt="เมนู"
+                            style={{ maxWidth: '80%', height: 'auto', cursor: 'pointer' }}
+                            onClick={handleClick}
+                        />
+                    </div>
                 </div>
-
                 <ul className="list-unstyled">
                     <li className="menu-item">
                         <Link to="/dashboard" className="menu-link">
@@ -195,14 +209,15 @@ function FeedbackDetail() {
                                 {notifications > 0 && (
                                     <span className="notification-badge">{notifications}</span> // แสดงจำนวนการแจ้งเตือน
                                 )}</h5>
-
                         </Link>
                     </li>
                 </ul>
             </div>
 
             <div className="top-menu">
-                <div className="hamburger-menu" onClick={toggleSidebar}>
+                <div className="hamburger-menu"
+                    onClick={toggleSidebar}
+                    style={{ color: isSidebarCollapsed ? '#fff' : '#000' }}>
                     ☰
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px', position: 'relative', marginLeft: 'auto' }}>

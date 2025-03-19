@@ -16,13 +16,17 @@ function BlogData() {
     const [errorMessage, setErrorMessage] = useState('');
     const [footerVisible, setFooterVisible] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-    
+
+    const [feedback, setFeedbacks] = useState('');
+    const [newfeedback, setNewFeedbacks] = useState('');
+
 
     const { blogId } = useParams();
     const [blog, setBlog] = useState(null);
 
     const navigate = useNavigate();
 
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const toggleSidebar = () => {
         setIsSidebarCollapsed(!isSidebarCollapsed);
     };
@@ -54,6 +58,7 @@ function BlogData() {
     }, [navigate]);
 
 
+
     const fetchAdminInfo = async () => {
         const token = localStorage.getItem('authToken');
         if (!token) {
@@ -81,6 +86,36 @@ function BlogData() {
 
     useEffect(() => {
         fetchAdminInfo();
+    }, []);
+
+    // ฟังก์ชันเพื่อดึงข้อมูล feedbacks
+    const fetchFeedbacks = async () => {
+        try {
+            const token = localStorage.getItem('authToken');
+            const response = await axios.get('http://localhost:5000/feedbacks', {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            setFeedbacks(response.data.feedbacks);
+
+            // นับจำนวนการแจ้งเตือนจาก feedback ที่ยังไม่ได้รับการตอบกลับ
+            const unreadNotifications = response.data.feedbacks.filter(fb => !fb.reply).length;
+            setNotifications(unreadNotifications);  // ตั้งค่าจำนวนแจ้งเตือน
+            localStorage.setItem('notifications', unreadNotifications);  // บันทึกใน localStorage
+
+            // เก็บ feedback ที่ใหม่เข้ามาเพื่อแสดงใน dropdown
+            const newFeedbacksList = response.data.feedbacks.filter(fb => !fb.reply);
+            setNewFeedbacks(newFeedbacksList);
+
+            setLoading(false);
+        } catch (error) {
+            console.error('Error fetching feedbacks', error);
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchFeedbacks();
     }, []);
 
     useEffect(() => {
@@ -140,17 +175,29 @@ function BlogData() {
         );
     }
 
-    return (
-        <div className="member-detail">
-            <div className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
-                <div className="text-center mb-4">
-                    <img
-                        src="https://i.imgur.com/hcl6qVY.png"
-                        alt="เมนู"
-                        style={{ maxWidth: '80%', height: 'auto', paddingTop: 15 }}
-                    />
-                </div>
+    const handleClick = () => {
+        navigate('/dashboard');
+    };
 
+    return (
+        <div className="blogdata">
+            <div className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''} ${isMobile ? 'mobile' : ''}`}>
+                <div className="top-bar">
+                    <div className="hamburger-menu"
+                        onClick={toggleSidebar}
+                        style={{ color: isSidebarCollapsed ? '#fff' : '#000' }}>
+                        ☰
+                    </div>
+                    <div className="logohahai text-center mb-4 ">
+                        <img
+                            className="imglogo"
+                            src="https://i.imgur.com/hcl6qVY.png"
+                            alt="เมนู"
+                            style={{ maxWidth: '80%', height: 'auto', cursor: 'pointer' }}
+                            onClick={handleClick}
+                        />
+                    </div>
+                </div>
                 <ul className="list-unstyled">
                     <li className="menu-item">
                         <Link to="/dashboard" className="menu-link">
@@ -179,14 +226,19 @@ function BlogData() {
                     <li className="menu-item">
                         <Link to="/feedback" className="menu-link">
                             <FaComments size={20} />
-                            <h5>แจ้งปัญหาการใช้งาน</h5>
+                            <h5>จัดการรายการปัญหา
+                                {notifications > 0 && (
+                                    <span className="notification-badge">{notifications}</span> // แสดงจำนวนการแจ้งเตือน
+                                )}</h5>
                         </Link>
                     </li>
                 </ul>
             </div>
 
             <div className="top-menu">
-                <div className="hamburger-menu" onClick={toggleSidebar}>
+                <div className="hamburger-menu"
+                    onClick={toggleSidebar}
+                    style={{ color: isSidebarCollapsed ? '#fff' : '#000' }}>
                     ☰
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px', position: 'relative', marginLeft: 'auto' }}>
