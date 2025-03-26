@@ -26,20 +26,15 @@ app.use(express.json());
 dotenv.config();
 
 mongoose
-  .connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(process.env.MONGODB_URI)
   .then(async () => {
     console.log('MongoDB Connected');
 
     const ADMIN_USERNAME = 'admin';
     const ADMIN_PASSWORD = '1234';
 
-    // ตรวจสอบว่ามีข้อมูลแอดมินอยู่แล้วหรือไม่ (ไม่จำเป็นต้องใช้ชื่อ admin เฉพาะ)
     const existingAdmin = await Admin.findOne();
     if (!existingAdmin) {
-      // หากไม่มีข้อมูลแอดมิน สร้างข้อมูลใหม่
       const hashedPassword = await bcrypt.hash(ADMIN_PASSWORD, 10);
       const newAdmin = new Admin({
         username: ADMIN_USERNAME,
@@ -85,6 +80,10 @@ const authenticateToken = (req, res, next) => {
     next();
   });
 };
+
+app.get("/", (req, res) => {
+  res.send("Backend is running!");
+});
 
 // api สำหรับการล็อกอิน
 app.post('/login', async (req, res) => {
