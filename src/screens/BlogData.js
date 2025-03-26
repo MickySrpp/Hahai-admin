@@ -5,6 +5,9 @@ import { FaFileImage } from "react-icons/fa6";
 import axios from 'axios';
 
 function BlogData() {
+
+    const [profileImage, setProfileImage] = useState(null);
+    const [originalProfileImage, setOriginalProfileImage] = useState(null);
     const [adminUsername, setAdminUsername] = useState('');
     const [lastLoginTime, setLastLoginTime] = useState('');
     const [isLoggedIn, setIsLoggedIn] = useState(true);
@@ -16,6 +19,8 @@ function BlogData() {
     const [errorMessage, setErrorMessage] = useState('');
     const [footerVisible, setFooterVisible] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+    const [isLoading, setIsLoading] = useState(false);
 
     const [feedback, setFeedbacks] = useState('');
     const [newfeedback, setNewFeedbacks] = useState('');
@@ -77,6 +82,8 @@ function BlogData() {
             setLastLoginTime(response.data.lastLoginTime);
             setIsLoggedIn(response.data.isLoggedIn);
             setCreatedAt(response.data.createdAt);
+            setProfileImage(response.data.profileImage);
+            setOriginalProfileImage(response.data.profileImage);
             setLoading(false);
         } catch (error) {
             setErrorMessage('เกิดข้อผิดพลาดในการดึงข้อมูลแอดมิน');
@@ -247,13 +254,28 @@ function BlogData() {
                     style={{ color: isSidebarCollapsed ? '#fff' : '#000' }}>
                     ☰
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px', position: 'relative', marginLeft: 'auto' }}>
-                    <div className="notification-icon" onClick={handleNotifications}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', position: 'relative', marginLeft: 'auto' }}>
+                    {/* <div className="notification-icon" onClick={handleNotifications}>
                         <FaBell size={25} />
                         {notifications > 0 && <span className="notification-badge">{notifications}</span>}
-                    </div>
+                      </div> */}
                     <div className="profile-icon" onClick={handleDropdownToggle}>
-                        <FaUserCircle size={30} />
+                        {isLoading ? (
+                            <p>กำลังโหลด...</p>
+                        ) : profileImage ? (
+                            <img
+                                src={profileImage}
+                                alt="Profile"
+                                style={{
+                                    width: '30px',
+                                    height: '30px',
+                                    borderRadius: '50%',
+                                    objectFit: 'cover',
+                                }}
+                            />
+                        ) : (
+                            <FaUserCircle size={30} />
+                        )}
                         <span style={{ marginLeft: '10px', fontSize: '14px', color: '#006AFF' }}>
                             {adminUsername}
                             <FaCaretDown size={12} style={{ marginLeft: '5px', verticalAlign: 'middle' }} />

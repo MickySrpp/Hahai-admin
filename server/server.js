@@ -529,6 +529,23 @@ app.get('/ban-users', authenticateToken, async (req, res) => {
   }
 });
 
+app.get('/users/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'ไม่พบผู้ใช้' });
+    }
+
+    res.status(200).json(user);
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    res.status(500).json({ message: 'เกิดข้อผิดพลาดในการดึงข้อมูลผู้ใช้' });
+  }
+});
+
+
 // ลบสมาชิก
 app.delete('/users/:id', authenticateToken, async (req, res) => {
   try {

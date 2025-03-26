@@ -408,12 +408,12 @@ function ReportDetail() {
                             ลบกระทู้
                         </button>
 
-                        <button
+                        {/* <button
                             className="unlock-button"
                             onClick={() => handleNavigateToMemberDetail(report.blogOwner)}
                         >
                             เจ้าของกระทู้
-                        </button>
+                        </button> */}
 
 
                     </div>
