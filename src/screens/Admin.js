@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaHome, FaUsers, FaFlag, FaComments, FaTag, FaUserCircle, FaBell, FaCamera, FaCaretDown } from 'react-icons/fa';
+import { FaHome, FaUsers, FaFlag, FaComments, FaTag, FaUserCircle, FaBell, FaCamera, FaCaretDown, FaBoxOpen } from 'react-icons/fa';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../hahai.css';
 import '../menu.css';
@@ -198,7 +198,6 @@ function Dashboard() {
     return new Blob([uintArray], { type: mimeString });
   };
 
-
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -312,6 +311,13 @@ function Dashboard() {
                 {notifications > 0 && (
                   <span className="notification-badge">{notifications}</span> // แสดงจำนวนการแจ้งเตือน
                 )}</h5>
+            </Link>
+          </li>
+          <li className="menu-item">
+            <Link to="/receive" className="menu-link">
+              <FaBoxOpen size={20} />
+              <h5>รับสิ่งของ</h5>
+
             </Link>
           </li>
         </ul>

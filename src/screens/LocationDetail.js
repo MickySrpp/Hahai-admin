@@ -3,19 +3,19 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { FaSearch, FaChevronRight, FaChevronLeft } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaHome, FaUsers, FaFlag, FaComments, FaTag, FaUserCircle, FaTrash, FaEye, FaBan, FaBell, FaCaretDown } from 'react-icons/fa';
+import { FaHome, FaUsers, FaFlag, FaComments, FaTag, FaUserCircle, FaTrash, FaEye, FaBan, FaBell, FaCaretDown, FaBoxOpen } from 'react-icons/fa';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../hahai.css';
 import '../menu.css';
 
 function LocationDetail() {
-  const [profileImage, setProfileImage] = useState(null);
-  const [originalProfileImage, setOriginalProfileImage] = useState(null);
-  const [adminUsername, setAdminUsername] = useState('');
-  const [lastLoginTime, setLastLoginTime] = useState('');
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
-  const [currentDate, setCurrentDate] = useState('');
-  const [createdAt, setCreatedAt] = useState('');
+    const [profileImage, setProfileImage] = useState(null);
+    const [originalProfileImage, setOriginalProfileImage] = useState(null);
+    const [adminUsername, setAdminUsername] = useState('');
+    const [lastLoginTime, setLastLoginTime] = useState('');
+    const [isLoggedIn, setIsLoggedIn] = useState(true);
+    const [currentDate, setCurrentDate] = useState('');
+    const [createdAt, setCreatedAt] = useState('');
     const [showDropdown, setShowDropdown] = useState(false);
     const [notifications, setNotifications] = useState(3);
     const [users, setUsers] = useState([]);
@@ -92,33 +92,33 @@ function LocationDetail() {
     const fetchAdminInfo = async () => {
         const token = localStorage.getItem('authToken');
         if (!token) {
-          setLoading(false);
-          setErrorMessage('ไม่พบผู้ใช้ โปรดเข้าสู่ระบบใหม่');
-          return;
+            setLoading(false);
+            setErrorMessage('ไม่พบผู้ใช้ โปรดเข้าสู่ระบบใหม่');
+            return;
         }
-    
+
         try {
-          const response = await axios.get('http://localhost:5000/admin', {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          setAdminUsername(response.data.username);
-          setLastLoginTime(response.data.lastLoginTime);
-          setIsLoggedIn(response.data.isLoggedIn);
-          setCreatedAt(response.data.createdAt);
-          setProfileImage(response.data.profileImage);
-          setOriginalProfileImage(response.data.profileImage);
-          setLoading(false);
+            const response = await axios.get('http://localhost:5000/admin', {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            setAdminUsername(response.data.username);
+            setLastLoginTime(response.data.lastLoginTime);
+            setIsLoggedIn(response.data.isLoggedIn);
+            setCreatedAt(response.data.createdAt);
+            setProfileImage(response.data.profileImage);
+            setOriginalProfileImage(response.data.profileImage);
+            setLoading(false);
         } catch (error) {
-          setErrorMessage('เกิดข้อผิดพลาดในการดึงข้อมูลแอดมิน');
-          setLoading(false);
+            setErrorMessage('เกิดข้อผิดพลาดในการดึงข้อมูลแอดมิน');
+            setLoading(false);
         }
-      };
-    
-      useEffect(() => {
+    };
+
+    useEffect(() => {
         fetchAdminInfo();
-      }, []);
+    }, []);
 
     useEffect(() => {
         const fetchBlogs = async () => {
@@ -245,6 +245,12 @@ function LocationDetail() {
                                 {notifications > 0 && (
                                     <span className="notification-badge">{notifications}</span> // แสดงจำนวนการแจ้งเตือน
                                 )}</h5>
+                        </Link>
+                    </li>
+                    <li className="menu-item">
+                        <Link to="/receive" className="menu-link">
+                            <FaBoxOpen size={20} />
+                            <h5>รับสิ่งของ</h5>
                         </Link>
                     </li>
                 </ul>

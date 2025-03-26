@@ -346,6 +346,10 @@
     /* ซ่อนเริ่มต้น */
 }
 
+h5 {
+    margin-bottom: 0;
+}
+
 @media (max-width: 768px) {
     .sidebar {
         width: 100%;

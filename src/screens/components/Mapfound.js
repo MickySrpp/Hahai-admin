@@ -294,7 +294,7 @@ const kkuBoundaryCoordinates = [
 
 const Mapfound = ({ timePeriod }) => {
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || 'AIzaSyB_HZkivm37aA--gm0tc5Bpu07bLodp81s',
+    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
     libraries: ['visualization'], // Ensure the "visualization" library is included
   });
 

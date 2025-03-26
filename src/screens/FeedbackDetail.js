@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { FaHome, FaUsers, FaFlag, FaComments, FaTag, FaTrash, FaEye, FaBan, FaBell, FaUserCircle, FaCaretDown } from 'react-icons/fa';
+import { FaHome, FaUsers, FaFlag, FaComments, FaTag, FaTrash, FaEye, FaBan, FaBell, FaUserCircle, FaCaretDown, FaBoxOpen } from 'react-icons/fa';
 import axios from 'axios';
 
 function FeedbackDetail() {
@@ -23,6 +23,9 @@ function FeedbackDetail() {
 
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
+    const { receive } = location.state; 
+    console.log(receive);
+    
     const handleScroll = () => {
         const bottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight;
         if (bottom) {
@@ -209,6 +212,12 @@ function FeedbackDetail() {
                                 {notifications > 0 && (
                                     <span className="notification-badge">{notifications}</span> // แสดงจำนวนการแจ้งเตือน
                                 )}</h5>
+                        </Link>
+                    </li>
+                    <li className="menu-item">
+                        <Link to="/receive" className="menu-link">
+                            <FaBoxOpen size={20} />
+                            <h5>รับสิ่งของ</h5>
                         </Link>
                     </li>
                 </ul>

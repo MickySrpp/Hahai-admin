@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
-import { FaSearch, FaChevronRight, FaChevronLeft, FaTrash, FaBell, FaUserCircle, FaHome, FaUsers, FaFlag, FaTag, FaComments, FaEye, FaCaretDown, FaComment, FaReply } from 'react-icons/fa';
+import { FaSearch, FaChevronRight, FaChevronLeft, FaTrash, FaBell, FaUserCircle, FaHome, FaUsers, FaFlag, FaTag, FaComments, FaEye, FaCaretDown, FaBoxOpen, FaReply } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../hahai.css';
@@ -51,7 +51,8 @@ function Feedback() {
       });
 
       setFeedbacks(response.data.feedbacks);
-
+      setTotalCount(response.data.feedbacks.length);
+      
       // นับจำนวนการแจ้งเตือนจาก feedback ที่ยังไม่ได้รับการตอบกลับ
       const unreadNotifications = response.data.feedbacks.filter(fb => !fb.reply).length;
       setNotifications(unreadNotifications);  // ตั้งค่าจำนวนแจ้งเตือน
@@ -200,7 +201,6 @@ function Feedback() {
   };
 
 
-
   const formatThaiDate = (dateString) => {
     const date = new Date(dateString);
     const thaiMonths = [
@@ -241,9 +241,6 @@ function Feedback() {
         );
       });
   }, [feedbacks, searchTerm]);
-
-
-
 
   const currentItems = useMemo(() => {
     const indexOfLastItem = currentPage * itemsPerPage;
@@ -346,6 +343,12 @@ function Feedback() {
                 )}</h5>
             </Link>
           </li>
+          <li className="menu-item">
+            <Link to="/receive" className="menu-link">
+              <FaBoxOpen size={20} />
+              <h5>รับสิ่งของ</h5>
+            </Link>
+          </li>
         </ul>
       </div>
 
@@ -394,14 +397,14 @@ function Feedback() {
           <nav aria-label="breadcrumb">
             <ol className="breadcrumb">
               <li className="breadcrumb-item"><Link to="/dashboard">แดชบอร์ด</Link></li>
-              <li className="breadcrumb-item active">จัดการแจ้งปัญหาการใช้งาน</li>
+              <li className="breadcrumb-item active">จัดการรายการปัญหาการใช้งาน</li>
             </ol>
           </nav>
-          <div className="count"><p>จำนวนการแจ้งปัญหาทั้งหมด: {totalCount}</p></div>
+          <div className="count"><p>จัดการรายการปัญหาการใช้งาน: {totalCount}</p></div>
         </div>
 
         <div className={`content ${isSidebarCollapsed ? 'full-screen' : ''}`}>
-          <h1>จัดการแจ้งปัญหาการใช้งาน</h1>
+          <h1>จัดการรายการปัญหาการใช้งาน</h1>
           <div className="search-container">
             <div className="search-bar">
               <input
@@ -453,14 +456,14 @@ function Feedback() {
                           <option value="pending">รอดำเนินการ</option>
                           <option value="in_progress">กำลังดำเนินการ</option>
                           <option value="resolved">แก้ไขแล้ว</option>
-                          <option value="closed">ปิด</option>
+                          {/* <option value="closed">ปิด</option> */}
                         </select>
                       </td>
                       <td>
                         {feedback.status === 'pending' && <span style={{ color: 'orange' }}>รอดำเนินการ</span>}
                         {feedback.status === 'in_progress' && <span style={{ color: 'blue' }}>กำลังดำเนินการ</span>}
                         {feedback.status === 'resolved' && <span style={{ color: 'green' }}>แก้ไขแล้ว</span>}
-                        {feedback.status === 'closed' && <span style={{ color: 'gray' }}>ปิด</span>}
+                        {/* {feedback.status === 'closed' && <span style={{ color: 'gray' }}>ปิด</span>} */}
                       </td>
 
                       <td>{formatThaiDate(feedback.createdAt)}</td>
@@ -532,6 +535,10 @@ function Feedback() {
             </div>
           </div>
         )}
+      </div>
+
+      <div className={`footer-content ${footerVisible ? 'visible' : ''}`}>
+        <p>&copy; 2025 Hahai Admin Panel. Designed to enhance system management and control.</p>
       </div>
     </div>
   );

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { FaSearch, FaChevronRight, FaChevronLeft } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaHome, FaUsers, FaFlag, FaComments, FaTag, FaUserCircle, FaTrash, FaEye, FaBan, FaBell, FaCaretDown } from 'react-icons/fa';
+import { FaHome, FaUsers, FaFlag, FaComments, FaTag, FaUserCircle, FaTrash, FaEye, FaBan, FaBell, FaCaretDown, FaBoxOpen } from 'react-icons/fa';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../hahai.css';
 import '../menu.css';
@@ -393,6 +393,12 @@ function Member() {
                 {notifications > 0 && (
                   <span className="notification-badge">{notifications}</span> // แสดงจำนวนการแจ้งเตือน
                 )}</h5>
+            </Link>
+          </li>
+          <li className="menu-item">
+            <Link to="/receive" className="menu-link">
+              <FaBoxOpen size={20} />
+              <h5>รับสิ่งของ</h5>
             </Link>
           </li>
         </ul>

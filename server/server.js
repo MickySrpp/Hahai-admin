@@ -17,6 +17,7 @@ import User from './models/user.js';
 import Report from './models/report.js';
 import Blog from './models/blog.js';
 import Notification from './models/notification.js';
+import Received from './models/received.js';
 
 const app = express();
 app.use(cors());
@@ -399,7 +400,6 @@ app.put('/feedback/:feedbackId/reply', async (req, res) => {
   }
 });
 
-
 app.get('/users', authenticateToken, async (req, res) => {
   try {
     // ดึงข้อมูลผู้ใช้ทั้งหมด
@@ -530,9 +530,6 @@ app.get('/ban-users', authenticateToken, async (req, res) => {
   }
 });
 
-
-
-
 // ลบสมาชิก
 app.delete('/users/:id', authenticateToken, async (req, res) => {
   try {
@@ -632,6 +629,39 @@ app.get('/reports', authenticateToken, async (req, res) => {
     res.status(500).json({ message: "Error fetching reports" });
   }
 });
+
+//แสดงการรับสิ่งของ
+app.get('/received', authenticateToken, async (req, res) => {
+  try {
+    const received = await Received.find()
+      .populate('user', 'username firstname lastname profileImage')
+      .populate('blog', 'obj_picture object_subtype color location note date createdAt receivedStatus')
+      .exec();
+
+    const totalReceived = await Received.countDocuments();
+
+    res.status(200).json({ received, totalReceived });
+  } catch (error) {
+    console.error("Error fetching received:", error);
+    res.status(500).json({ message: "Error fetching received" });
+  }
+});
+
+// app.get('/received', authenticateToken, async (req, res) => {
+//   try {
+//       const received = await Receive.find()
+//           .populate('userReceive', 'username firstname lastname profileImage')
+//           .populate('blog', 'obj_picture object_subtype color location note date createdAt receivedStatus') 
+//           .populate('user', 'username firstname lastname profileImage');
+
+//       const totalReceived = await Receive.countDocuments();
+
+//       res.status(200).json({ received, totalReceived });
+//   } catch (error) {
+//       console.error("Error fetching received:", error);
+//       res.status(500).json({ message: "Error fetching received" });
+//   }
+// });
 
 app.delete("/reports/:id", authenticateToken, async (req, res) => {
   const { id } = req.params;
@@ -774,49 +804,71 @@ app.get("/blogs", async (req, res) => {
 app.get("/blogs/top-object-subtypes", async (req, res) => {
   try {
     const { period } = req.query;
-    let startDate;
+    let startDate, endDate;
     const now = new Date();
 
+    // Set date range based on the selected period
     if (period === "วันนี้") {
       startDate = new Date();
       startDate.setHours(0, 0, 0, 0);
+      endDate = new Date();
+      endDate.setHours(23, 59, 59, 999);
     } else if (period === "เมื่อวาน") {
       startDate = new Date();
       startDate.setDate(startDate.getDate() - 1);
       startDate.setHours(0, 0, 0, 0);
+      endDate = new Date(startDate);
+      endDate.setHours(23, 59, 59, 999);
     } else if (period === "1สัปดาห์") {
       startDate = new Date();
       startDate.setDate(startDate.getDate() - 7);
+      endDate = now;
     } else if (period === "2สัปดาห์") {
       startDate = new Date();
       startDate.setDate(startDate.getDate() - 14);
+      endDate = now;
     } else if (period === "เดือนนี้") {
       startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      endDate = now;
     } else if (period === "เดือนที่แล้ว") {
       startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      endDate = new Date(now.getFullYear(), now.getMonth(), 1);
     } else if (period === "ปีนี้") {
       startDate = new Date(now.getFullYear(), 0, 1);
+      endDate = now;
     } else if (period === "ปีที่แล้ว") {
       startDate = new Date(now.getFullYear() - 1, 0, 1);
+      endDate = new Date(now.getFullYear(), 0, 1); // ข้อมูลต้องมาก่อนปีนี้
     }
 
     console.log("Filtering period:", period);
     console.log("Start Date for filter:", startDate);
+    console.log("End Date for filter:", endDate);
 
     let query = {};
-    if (startDate) {
+    if (startDate && endDate) {
+      query = { createdAt: { $gte: startDate, $lt: endDate } };
+    } else if (startDate) {
       query = { createdAt: { $gte: startDate } };
     }
 
     const blogs = await Blog.find(query);
     console.log("Total blogs found:", blogs.length);
 
+    if (blogs.length === 0) {
+      return res.status(200).json({ topSubtypes: [] });
+    }
+
     const subtypeCounts = {};
+    const receivedCounts = {};
 
     blogs.forEach(blog => {
       const subtype = blog.object_subtype;
       if (subtype) {
         subtypeCounts[subtype] = (subtypeCounts[subtype] || 0) + 1;
+        if (blog.receivedStatus) {
+          receivedCounts[subtype] = (receivedCounts[subtype] || 0) + 1;
+        }
       }
     });
 
@@ -824,13 +876,27 @@ app.get("/blogs/top-object-subtypes", async (req, res) => {
     console.log("Total reported subtypes:", totalReports);
 
     const sortedSubtypes = Object.entries(subtypeCounts)
-      .map(([type, count]) => ({
-        type,
-        count,
-        percentage: totalReports > 0 ? ((count / totalReports) * 100).toFixed(2) : 0,
-      }))
+      .map(([type, count]) => {
+        const receivedCount = receivedCounts[type] || 0;
+
+        // คำนวณจำนวนทั้งหมดที่ถูกรับไปแล้ว
+        const totalReceived = Object.values(receivedCounts).reduce((sum, received) => sum + received, 0);
+
+        // คำนวณเปอร์เซ็นต์ของการถูกรับแต่ละประเภท
+        const receivedPercentage = totalReceived > 0 ? ((receivedCount / totalReceived) * 100).toFixed(2) : 0;
+
+        return {
+          type,
+          count,
+          receivedCount,
+          totalPercentage: totalReports > 0 ? ((count / totalReports) * 100).toFixed(2) : 0,
+          foundPercentage: totalReports > 0 ? ((receivedCount / count) * 100).toFixed(2) : 0,
+          receivedPercentage, // เพิ่มเปอร์เซ็นต์ที่คำนวณได้
+        };
+      })
       .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
+
+
 
     console.log("Top subtypes:", sortedSubtypes);
 
@@ -840,6 +906,112 @@ app.get("/blogs/top-object-subtypes", async (req, res) => {
     res.status(500).json({ message: "Error calculating top subtypes" });
   }
 });
+
+
+
+//ชนิดปกติ
+// app.get("/blogs/top-object-location", async (req, res) => {
+//   try {
+//     const timePeriod = req.query.timePeriod || 'ทั้งหมด'; // ค่า default เป็น 'ทั้งหมด'
+//     const today = new Date();
+
+//     // ฟังก์ชันช่วยในการกรองข้อมูลตามช่วงเวลา
+//     const getDateFilter = (timePeriod) => {
+//       let startDate = null;
+//       let endDate = null;
+
+//       if (timePeriod === 'วันนี้') {
+//         startDate = new Date(today.setHours(0, 0, 0, 0)); // เริ่มจากเที่ยงคืนของวันนี้
+//         endDate = new Date(today.setHours(23, 59, 59, 999)); // สิ้นสุดที่ 23:59:59 ของวันนี้
+//       } else if (timePeriod === 'เมื่อวาน') {
+//         const yesterday = new Date(today);
+//         yesterday.setDate(today.getDate() - 1);
+//         startDate = new Date(yesterday.setHours(0, 0, 0, 0)); // เริ่มจากเที่ยงคืนของเมื่อวาน
+//         endDate = new Date(yesterday.setHours(23, 59, 59, 999)); // สิ้นสุดที่ 23:59:59 ของเมื่อวาน
+//       } else if (timePeriod === '1สัปดาห์') {
+//         startDate = new Date(today);
+//         startDate.setDate(today.getDate() - 7); // 7 วันก่อน
+//         endDate = new Date();
+//       } else if (timePeriod === '2สัปดาห์') {
+//         startDate = new Date(today);
+//         startDate.setDate(today.getDate() - 14); // 14 วันก่อน
+//         endDate = new Date();
+//       } else if (timePeriod === 'เดือนนี้') {
+//         startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+//         endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
+//       } else if (timePeriod === 'ปีนี้') {
+//         startDate = new Date(today.getFullYear(), 0, 1);
+//         endDate = new Date(today.getFullYear(), 11, 31, 23, 59, 59, 999);
+//       } else if (timePeriod === 'เดือนที่แล้ว') {
+//         const firstDayOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+//         startDate = new Date(firstDayOfLastMonth.setHours(0, 0, 0, 0)); // เริ่มต้นเดือนที่แล้ว
+//         const lastDayOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+//         endDate = new Date(lastDayOfLastMonth.setHours(23, 59, 59, 999)); // สิ้นสุดเดือนที่แล้ว
+//       } else if (timePeriod === 'ปีที่แล้ว') {
+//         startDate = new Date(today.getFullYear() - 1, 0, 1); // ปีที่แล้ว
+//         endDate = new Date(today.getFullYear() - 1, 11, 31, 23, 59, 59, 999);
+//       } else {
+//         // 'ทั้งหมด' ไม่กรองตามวันที่
+//         return {};
+//       }
+
+//       return { createdAt: { $gte: startDate, $lte: endDate } };  // เปลี่ยนจาก `date` เป็น `createdAt`
+//     };
+
+//     const dateFilter = getDateFilter(timePeriod);
+
+//     // ดึงข้อมูล blogs ตามการกรองช่วงเวลา
+//     const blogs = await Blog.find({ locationname: { $ne: null }, ...dateFilter })
+//       .populate("user", "username") // populate เฉพาะ `username`
+//       .lean();  // .lean() เพื่อให้ข้อมูลเป็น plain objects
+//     console.log(blogs);  // ดูว่ามี `username` หรือไม่ในแต่ละ `blog`
+
+//     if (blogs.length === 0) {
+//       return res.status(200).json({ topLocations: [] });
+//     }
+
+//     const locationGroups = {};
+
+//     blogs.forEach(blog => {
+//       const { locationname, location, latitude, longitude, obj_picture, object_subtype, color, note, date, createdAt, user } = blog;
+
+//       if (!locationGroups[locationname]) {
+//         locationGroups[locationname] = {
+//           locationname,
+//           location,
+//           latitude,
+//           longitude,
+//           count: 0,
+//           obj_picture,
+//           object_subtype,
+//           color,
+//           note,
+//           date,
+//           createdAt,  // ใช้ `createdAt` แทน `date`
+//           user: user ? { _id: user._id, username: user.username } : null
+//         };
+//       }
+
+//       locationGroups[locationname].count += 1;
+//     });
+
+//     const totalBlogsWithLocation = blogs.length;
+
+//     const topLocations = Object.values(locationGroups)
+//       .sort((a, b) => b.count - a.count)
+//       .slice(0, 5)
+//       .map(location => ({
+//         ...location,
+//         percentage: ((location.count / totalBlogsWithLocation) * 100).toFixed(2)
+//       }));
+
+//     res.status(200).json({ topLocations });
+//   } catch (error) {
+//     console.error("Error calculating top locations:", error);
+//     res.status(500).json({ message: "Error calculating top locations" });
+//   }
+// });
+
 
 app.get("/blogs/top-object-location", async (req, res) => {
   try {
@@ -930,7 +1102,6 @@ app.get("/blogs/top-object-location", async (req, res) => {
 
     const topLocations = Object.values(locationGroups)
       .sort((a, b) => b.count - a.count)
-      .slice(0, 5)
       .map(location => ({
         ...location,
         percentage: ((location.count / totalBlogsWithLocation) * 100).toFixed(2)
@@ -942,7 +1113,6 @@ app.get("/blogs/top-object-location", async (req, res) => {
     res.status(500).json({ message: "Error calculating top locations" });
   }
 });
-
 
 app.get("/blogs/by-location/:locationname", async (req, res) => {
   try {
@@ -1093,51 +1263,80 @@ app.get('/blogs/:blogId', async (req, res) => {
 
 app.get('/thread-counts', async (req, res) => {
   try {
-    const { period } = req.query; // รับค่าจาก query parameter ชื่อ period
+    const { period, sortBy } = req.query; // รับค่า period และ sortBy จาก query params
 
-    let startDate;
+    let startDate, endDate;
     const now = new Date();
 
-    // กำหนดช่วงเวลาตามที่เลือกใน UI
+    // กำหนด startDate และ endDate ตามช่วงเวลา
     if (period === "วันนี้") {
       startDate = new Date();
       startDate.setHours(0, 0, 0, 0);
+      endDate = new Date();
+      endDate.setHours(23, 59, 59, 999);
     } else if (period === "เมื่อวาน") {
       startDate = new Date();
       startDate.setDate(startDate.getDate() - 1);
       startDate.setHours(0, 0, 0, 0);
+      endDate = new Date();
+      endDate.setDate(endDate.getDate() - 1);
+      endDate.setHours(23, 59, 59, 999);
     } else if (period === "1สัปดาห์") {
       startDate = new Date();
       startDate.setDate(startDate.getDate() - 7);
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date();
     } else if (period === "2สัปดาห์") {
       startDate = new Date();
       startDate.setDate(startDate.getDate() - 14);
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date();
     } else if (period === "เดือนนี้") {
       startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      endDate = new Date();
     } else if (period === "เดือนที่แล้ว") {
       startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      endDate = new Date(now.getFullYear(), now.getMonth(), 1);
     } else if (period === "ปีนี้") {
       startDate = new Date(now.getFullYear(), 0, 1);
+      endDate = new Date();
     } else if (period === "ปีที่แล้ว") {
       startDate = new Date(now.getFullYear() - 1, 0, 1);
+      endDate = new Date(now.getFullYear(), 0, 1);
     }
 
-    // สร้าง query เพื่อกรองข้อมูลตามช่วงเวลาที่เลือก
     let query = {};
-    if (startDate) {
-      query.createdAt = { $gte: startDate };
+    if (startDate && endDate) {
+      query.createdAt = { $gte: startDate, $lt: endDate }; // 🔹 ใช้ช่วงเวลาที่ชัดเจน
     }
 
-    // นับจำนวนกระทู้ที่มีสถานะ received เป็น true
-    const receivedCount = await Blog.countDocuments({ ...query, received: true });
-    // นับจำนวนกระทู้ที่มีสถานะ received เป็น false
-    const notReceivedCount = await Blog.countDocuments({ ...query, received: false });
+    // นับจำนวนกระทู้ทั้งหมด
+    const totalThreads = await Blog.countDocuments(query);
 
-    res.json({ receivedCount, notReceivedCount }); // ส่งข้อมูลกลับไปที่ frontend
+    // นับจำนวนกระทู้ที่ถูกแจ้งรับแล้ว
+    const receivedCount = await Blog.countDocuments({ ...query, receivedStatus: true });
+
+    // คำนวณจำนวนกระทู้ที่ยังไม่ได้รับ
+    const notReceivedCount = totalThreads - receivedCount;
+
+    let sortedData = [
+      { label: "Received", count: receivedCount },
+      { label: "Not Received", count: notReceivedCount }
+    ];
+
+    // เรียงลำดับตามที่เลือก
+    if (sortBy === "received") {
+      sortedData.sort((a, b) => b.count - a.count);
+    } else if (sortBy === "notReceived") {
+      sortedData.sort((a, b) => a.count - b.count);
+    }
+
+    res.json({ receivedCount, notReceivedCount, sortedData });
   } catch (error) {
     res.status(500).json({ error: "Error fetching counts" });
   }
 });
+
 
 
 

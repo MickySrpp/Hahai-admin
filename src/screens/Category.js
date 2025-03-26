@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import axios from 'axios';
 import { FaSearch, FaChevronRight, FaChevronLeft } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaHome, FaUsers, FaFlag, FaComments, FaTag, FaUserCircle, FaEdit, FaTrash, FaBell, FaCaretDown } from 'react-icons/fa';
+import { FaHome, FaUsers, FaFlag, FaComments, FaTag, FaUserCircle, FaEdit, FaTrash, FaBell, FaCaretDown, FaBoxOpen } from 'react-icons/fa';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../hahai.css';
 import '../menu.css';
@@ -29,7 +29,7 @@ function Category() {
   const [errorMessage, setErrorMessage] = useState('');
   const [footerVisible, setFooterVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
+  const [sortOrder, setSortOrder] = useState('asc');  // น้อยไปมาก
 
   const [feedback, setFeedbacks] = useState('');
   const [newfeedback, setNewFeedbacks] = useState('');
@@ -197,6 +197,9 @@ function Category() {
           setTotalCategories(0);
         }
       }
+      if (response.data && response.data.categories) {
+        setCategories(response.data.categories); // Set categories data
+      }
 
       setLoading(false);
     } catch (error) {
@@ -211,6 +214,19 @@ function Category() {
       setLoading(false);
     }
   }, [navigate]);
+
+  const handleSortChange = () => {
+    setSortOrder(prevSortOrder => (prevSortOrder === 'asc' ? 'desc' : 'asc'));
+  };
+
+  const sortedCategories = useMemo(() => {
+    return categories.sort((a, b) => {
+      const compareValue = sortOrder === 'asc'
+        ? a.title.localeCompare(b.title) // For sorting by title in ascending order
+        : b.title.localeCompare(a.title); // For sorting by title in descending order
+      return compareValue;
+    });
+  }, [categories, sortOrder]);
 
   useEffect(() => {
     if (token) {
@@ -356,6 +372,12 @@ function Category() {
                 )}</h5>
             </Link>
           </li>
+          <li className="menu-item">
+            <Link to="/receive" className="menu-link">
+              <FaBoxOpen size={20} />
+              <h5>รับสิ่งของ</h5>
+            </Link>
+          </li>
         </ul>
       </div>
 
@@ -416,6 +438,10 @@ function Category() {
           </div>
         </div>
 
+        {/* <button onClick={handleSortChange}>
+          {sortOrder === 'asc' ? 'Sort Z-A' : 'Sort A-Z'}
+        </button> */}
+
         <div className={`content ${isSidebarCollapsed ? 'full-screen' : ''}`}>
           <h1>จัดการหมวดหมู่</h1>
 
@@ -454,14 +480,14 @@ function Category() {
                 </tr>
               </thead>
               <tbody>
-                {currentItems.length === 0 ? (
+                {sortedCategories.length === 0 ? (
                   <tr>
-                    <td colSpan="5" style={{ textAlign: 'center' }}>ไม่พบข้อมูล</td>
+                    <td colSpan="4" style={{ textAlign: 'center' }}>ไม่พบข้อมูล</td>
                   </tr>
                 ) : (
-                  currentItems.map((category) => (
+                  sortedCategories.map((category, index) => (
                     <tr key={category._id}>
-                      <td>{category.realIndex}</td>
+                      <td>{index + 1}</td> {/* Show the index as the row number */}
                       <td>{category.title}</td>
                       <td>{category.description}</td>
                       <td>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { FaHome, FaUsers, FaFlag, FaComments, FaTag, FaUserCircle, FaBell, FaCaretDown } from 'react-icons/fa';
+import { FaHome, FaUsers, FaFlag, FaComments, FaTag, FaUserCircle, FaBell, FaCaretDown, FaBoxOpen } from 'react-icons/fa';
 import '../hahai.css';
 import '../menu.css';
 
@@ -262,6 +262,12 @@ function UpdateCategory() {
                                 {notifications > 0 && (
                                     <span className="notification-badge">{notifications}</span> // แสดงจำนวนการแจ้งเตือน
                                 )}</h5>
+                        </Link>
+                    </li>
+                    <li className="menu-item">
+                        <Link to="/receive" className="menu-link">
+                            <FaBoxOpen size={20} />
+                            <h5>รับสิ่งของ</h5>
                         </Link>
                     </li>
                 </ul>

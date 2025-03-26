@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { FaHome, FaUsers, FaFlag, FaComments, FaTag, FaUserCircle, FaTrash, FaEye, FaBan, FaBell, FaUser, FaCaretDown } from 'react-icons/fa';
+import { FaHome, FaUsers, FaFlag, FaComments, FaTag, FaUserCircle, FaTrash, FaEye, FaBan, FaBell, FaUser, FaCaretDown, FaBoxOpen } from 'react-icons/fa';
 import axios from 'axios';
 
 function MemberDetail() {
@@ -357,6 +357,12 @@ function MemberDetail() {
                 {notifications > 0 && (
                   <span className="notification-badge">{notifications}</span> // แสดงจำนวนการแจ้งเตือน
                 )}</h5>
+            </Link>
+          </li>
+          <li className="menu-item">
+            <Link to="/receive" className="menu-link">
+              <FaBoxOpen size={20} />
+              <h5>รับสิ่งของ</h5>
             </Link>
           </li>
         </ul>

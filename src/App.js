@@ -14,6 +14,8 @@ import ReportDetail from './screens/ReportDetail.js';
 import LocationDetail from './screens/LocationDetail.js';
 import Blogdata from './screens/BlogData.js';
 import FeedbackDetail from './screens/FeedbackDetail.js';
+import Receive from './screens/Receive.js';
+import ReceiveDetail from './screens/ReportDetail.js';
 
 const App = () => {
   return (
@@ -33,7 +35,10 @@ const App = () => {
         <Route path="/memberdetail/:id" element={< MemberDetail />} />
         <Route path="/reportdetail" element={< ReportDetail />} />
         <Route path="/locationdetail/:locationname" element={<LocationDetail />} />
-        <Route path="/blog/:blogId" element={<Blogdata />} />
+        <Route path="/blog/:blogId" element={< Blogdata />} />
+        <Route path="/receive" element={< Receive />} />
+        <Route path="/receivedetail" element={< ReceiveDetail />} />
+
       </Routes>
     </Router>
   );

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
-import { FaSearch, FaTrash, FaChevronLeft, FaChevronRight, FaHome, FaUsers, FaFlag, FaComments, FaTag, FaUserCircle, FaEye, FaReply, FaBell, FaCaretDown } from 'react-icons/fa';
+import { FaSearch, FaTrash, FaChevronLeft, FaChevronRight, FaHome, FaUsers, FaFlag, FaComments, FaTag, FaUserCircle, FaEye, FaBoxOpen, FaBell, FaCaretDown } from 'react-icons/fa';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../hahai.css';
@@ -288,6 +288,12 @@ function ReportDetail() {
                                 {notifications > 0 && (
                                     <span className="notification-badge">{notifications}</span> // แสดงจำนวนการแจ้งเตือน
                                 )}</h5>
+                        </Link>
+                    </li>
+                    <li className="menu-item">
+                        <Link to="/receive" className="menu-link">
+                            <FaBoxOpen size={20} />
+                            <h5>รับสิ่งของ</h5>
                         </Link>
                     </li>
                 </ul>
