@@ -9,7 +9,7 @@ function BlogDetail() {
   useEffect(() => {
     const fetchTopSubtypes = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/blogs/top-object-subtypes");
+        const response = await axios.get("https://hahai-admin-79ly.onrender.com/blogs/top-object-subtypes");
         setTopSubtypes(response.data);
       } catch (error) {
         console.error("Error fetching top subtypes:", error);

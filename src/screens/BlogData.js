@@ -68,7 +68,7 @@ function BlogData() {
         }
 
         try {
-            const response = await axios.get('http://localhost:5000/admin', {
+            const response = await axios.get('https://hahai-admin-79ly.onrender.com/admin', {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -92,7 +92,7 @@ function BlogData() {
     const fetchFeedbacks = async () => {
         try {
             const token = localStorage.getItem('authToken');
-            const response = await axios.get('http://localhost:5000/feedbacks', {
+            const response = await axios.get('https://hahai-admin-79ly.onrender.com/feedbacks', {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
@@ -121,7 +121,7 @@ function BlogData() {
     useEffect(() => {
         const fetchBlog = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/blogs/${blogId}`);
+                const response = await axios.get(`https://hahai-admin-79ly.onrender.com/blogs/${blogId}`);
                 if (response.status === 200) {
                     setBlog(response.data);
                     setLoading(false);

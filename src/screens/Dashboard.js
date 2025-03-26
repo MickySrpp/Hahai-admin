@@ -82,7 +82,7 @@ function Dashboard() {
   const fetchFeedbacks = async () => {
     try {
       const token = localStorage.getItem('authToken');
-      const response = await axios.get('http://localhost:5000/feedbacks', {
+      const response = await axios.get('https://hahai-admin-79ly.onrender.com/feedbacks', {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -111,7 +111,7 @@ function Dashboard() {
   useEffect(() => {
     const fetchCounts = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/blogs");
+        const response = await axios.get("https://hahai-admin-79ly.onrender.com/blogs");
         console.log(response.data);
         setReceivedCount(response.data.receivedCount);
         setNotReceivedCount(response.data.notReceivedCount);
@@ -149,7 +149,7 @@ function Dashboard() {
     }
 
     try {
-      const response = await axios.get('http://localhost:5000/admin', {
+      const response = await axios.get('https://hahai-admin-79ly.onrender.com/admin', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -201,7 +201,7 @@ function Dashboard() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/users', {
+        const response = await axios.get('https://hahai-admin-79ly.onrender.com/users', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('authToken')}`,
           },
@@ -225,7 +225,7 @@ function Dashboard() {
   useEffect(() => {
     const fetchBanUsers = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/ban-users?timePeriod=${timePeriodForBanUsers}`, {
+        const response = await axios.get(`https://hahai-admin-79ly.onrender.com/ban-users?timePeriod=${timePeriodForBanUsers}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('authToken')}`,
           },
@@ -248,7 +248,7 @@ function Dashboard() {
   useEffect(() => {
     const fetchTotalBlogs = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/blogs', {
+        const response = await axios.get('https://hahai-admin-79ly.onrender.com/blogs', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('authToken')}`,
           },
@@ -276,7 +276,7 @@ function Dashboard() {
   // useEffect(() => {
   //   console.log("Current subtype time period:", timePeriodForSubtypes);
 
-  //   const fetchUrl = `http://localhost:5000/blogs/top-object-subtypes?period=${timePeriodForSubtypes}`;
+  //   const fetchUrl = `https://hahai-admin-79ly.onrender.com/blogs/top-object-subtypes?period=${timePeriodForSubtypes}`;
   //   console.log("Fetching from:", fetchUrl);
 
   //   fetch(fetchUrl)
@@ -307,7 +307,7 @@ function Dashboard() {
   useEffect(() => {
     console.log("Current subtype time period:", timePeriodForSubtypes);
 
-    const fetchUrl = `http://localhost:5000/blogs/top-object-subtypes?period=${timePeriodForSubtypes}`;
+    const fetchUrl = `https://hahai-admin-79ly.onrender.com/blogs/top-object-subtypes?period=${timePeriodForSubtypes}`;
     console.log("Fetching from:", fetchUrl);
 
     fetch(fetchUrl)
@@ -338,7 +338,7 @@ function Dashboard() {
 
   useEffect(() => {
     console.log("Current time period:", timePeriod);
-    const fetchUrl = `http://localhost:5000/blogs/top-object-location?timePeriod=${timePeriod}`;
+    const fetchUrl = `https://hahai-admin-79ly.onrender.com/blogs/top-object-location?timePeriod=${timePeriod}`;
 
     fetch(fetchUrl)
       .then((response) => response.json())
@@ -368,7 +368,7 @@ function Dashboard() {
   useEffect(() => {
     const fetchReceivedItemCounts = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/thread-counts?period=${timePeriodForThreads}`);
+        const response = await axios.get(`https://hahai-admin-79ly.onrender.com/thread-counts?period=${timePeriodForThreads}`);
         setReceivedCount(response.data.receivedCount); // 🔹 ใช้ await ให้แน่ใจว่าข้อมูลโหลดครบ
         setNotReceivedCount(response.data.notReceivedCount);
       } catch (error) {

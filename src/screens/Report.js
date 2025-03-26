@@ -53,7 +53,7 @@ function Report() {
   const fetchFeedbacks = async () => {
     try {
       const token = localStorage.getItem('authToken');
-      const response = await axios.get('http://localhost:5000/feedbacks', {
+      const response = await axios.get('https://hahai-admin-79ly.onrender.com/feedbacks', {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -172,7 +172,7 @@ function Report() {
     }
 
     try {
-      const response = await axios.get('http://localhost:5000/admin', {
+      const response = await axios.get('https://hahai-admin-79ly.onrender.com/admin', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -197,7 +197,7 @@ function Report() {
   const fetchReports = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:5000/reports', {
+      const response = await axios.get('https://hahai-admin-79ly.onrender.com/reports', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -231,7 +231,7 @@ function Report() {
     }
 
     try {
-      const response = await axios.delete(`http://localhost:5000/reports/${id}`, {
+      const response = await axios.delete(`https://hahai-admin-79ly.onrender.com/reports/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -251,7 +251,7 @@ function Report() {
 
   const handleReplyToUser = async (reportId) => {
     try {
-      const response = await axios.post(`http://localhost:5000/reports/${reportId}/reply`, {
+      const response = await axios.post(`https://hahai-admin-79ly.onrender.com/reports/${reportId}/reply`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

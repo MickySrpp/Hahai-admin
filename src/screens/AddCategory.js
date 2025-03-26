@@ -43,7 +43,7 @@ function AddCategory() {
     const fetchFeedbacks = async () => {
         try {
             const token = localStorage.getItem('authToken');
-            const response = await axios.get('http://localhost:5000/feedbacks', {
+            const response = await axios.get('https://hahai-admin-79ly.onrender.com/feedbacks', {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
@@ -122,7 +122,7 @@ function AddCategory() {
         }
 
         try {
-            const response = await axios.get('http://localhost:5000/admin', {
+            const response = await axios.get('https://hahai-admin-79ly.onrender.com/admin', {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -160,7 +160,7 @@ function AddCategory() {
                 return;
             }
 
-            const response = await axios.post("http://localhost:5000/categories", newCategory, {
+            const response = await axios.post("https://hahai-admin-79ly.onrender.com/categories", newCategory, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },

@@ -38,7 +38,7 @@ function MemberDetail() {
   const fetchFeedbacks = async () => {
     try {
       const token = localStorage.getItem('authToken');
-      const response = await axios.get('http://localhost:5000/feedbacks', {
+      const response = await axios.get('https://hahai-admin-79ly.onrender.com/feedbacks', {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -114,7 +114,7 @@ function MemberDetail() {
     }
 
     try {
-      const response = await axios.get('http://localhost:5000/admin', {
+      const response = await axios.get('https://hahai-admin-79ly.onrender.com/admin', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -138,7 +138,7 @@ function MemberDetail() {
 
   const fetchUserData = async (userId) => {
     try {
-      const response = await axios.get(`http://localhost:5000/users/${userId}`, {
+      const response = await axios.get(`https://hahai-admin-79ly.onrender.com/users/${userId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
         },
@@ -233,7 +233,7 @@ function MemberDetail() {
 
     try {
       const response = await axios.put(
-        `http://localhost:5000/users/suspend/${user._id}`,
+        `https://hahai-admin-79ly.onrender.com/users/suspend/${user._id}`,
         { reason: "การละเมิดกฎ" },
         {
           headers: {
@@ -269,7 +269,7 @@ function MemberDetail() {
 
     try {
       const response = await axios.put(
-        `http://localhost:5000/users/unsuspend/${user._id}`,
+        `https://hahai-admin-79ly.onrender.com/users/unsuspend/${user._id}`,
         {}, // ส่งข้อมูลที่จำเป็น (ถ้ามี)
         {
           headers: {

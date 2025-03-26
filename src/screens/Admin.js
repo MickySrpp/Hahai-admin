@@ -114,7 +114,7 @@ function Dashboard() {
   const fetchFeedbacks = async () => {
     try {
       const token = localStorage.getItem('authToken');
-      const response = await axios.get('http://localhost:5000/feedbacks', {
+      const response = await axios.get('https://hahai-admin-79ly.onrender.com/feedbacks', {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -165,7 +165,7 @@ function Dashboard() {
     }
 
     try {
-      const response = await axios.get('http://localhost:5000/admin', {
+      const response = await axios.get('https://hahai-admin-79ly.onrender.com/admin', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -240,7 +240,7 @@ function Dashboard() {
         formData.append('profileImage', imageBlob);
       }
 
-      await axios.put('http://localhost:5000/admin', formData, {
+      await axios.put('https://hahai-admin-79ly.onrender.com/admin', formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
