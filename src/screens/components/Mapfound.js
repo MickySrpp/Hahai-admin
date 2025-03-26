@@ -1,24 +1,21 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GoogleMap, Polygon, Marker, InfoWindow, useJsApiLoader, HeatmapLayer } from '@react-google-maps/api';
-
 import axios from 'axios';
 
 const kkuBoundaryCoordinates = [
-  { lat: 16.482067, lng: 102.832368 },
-  { lat: 16.480803, lng: 102.805970 },
-  { lat: 16.442559, lng: 102.810207 },
-  { lat: 16.441244, lng: 102.819292 },
-  { lat: 16.465277, lng: 102.822122 },
-  { lat: 16.464163, lng: 102.831683 },
+  { lat: 16.482067, lng: 102.832368 }, { lat: 16.480803, lng: 102.805970 },
+  { lat: 16.442559, lng: 102.810207 }, { lat: 16.441244, lng: 102.819292 },
+  { lat: 16.465277, lng: 102.822122 }, { lat: 16.464163, lng: 102.831683 },
   { lat: 16.482067, lng: 102.832368 }
 ];
 
 const Mapfound = ({ timePeriod }) => {
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
-    libraries: ['visualization'], // Ensure the "visualization" library is included
+    libraries: ['visualization'],
   });
+  console.log("Google Maps API Key:", process.env.REACT_APP_GOOGLE_MAPS_API_KEY);
 
   const [blogs, setBlogs] = useState([]);
   const [selectedBlog, setSelectedBlog] = useState(null);
@@ -26,37 +23,33 @@ const Mapfound = ({ timePeriod }) => {
   const mapRef = useRef(null);
   const navigate = useNavigate();
 
-  // Fetch blog data for the time period
-  const fetchData = async (timePeriod) => {
-    try {
-      const response = await axios.get(`https://hahai-admin-79ly.onrender.com/blogs/top-object-location?timePeriod=${timePeriod}`);
-      if (response.data && response.data.topLocations) {
-        const sortedBlogs = response.data.topLocations.sort((a, b) => b.count - a.count);
-        setBlogs(sortedBlogs);
-      }
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
-
+  // ดึงข้อมูลทั้งหมดหรือ 5 อันดับแรกตาม timePeriod
   useEffect(() => {
-    if (timePeriod) {
-      fetchData(timePeriod);
-    }
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`https://hahai-admin-79ly.onrender.com/blogs/top-object-location?timePeriod=${timePeriod}`);
+        if (response.data && response.data.topLocations) {
+          setBlogs(response.data.topLocations.slice(0, 5)); // หรือใช้ locations ทั้งหมดตามเงื่อนไขที่กำหนด
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
   }, [timePeriod]);
 
-  // Fetch heatmap data based on the timePeriod
+
+  // ดึงข้อมูล Heatmap โดยใช้ timePeriod
   useEffect(() => {
     const fetchAllLocationsForHeatmap = async () => {
       try {
         const response = await axios.get(`https://hahai-admin-79ly.onrender.com/blogs?timePeriod=${timePeriod}`);
         if (response.data && response.data.blogs && response.data.blogs.length > 0) {
-          const heatmapFormattedData = response.data.blogs.map(loc => ({
-            location: new window.google.maps.LatLng(loc.latitude, loc.longitude), // Ensure proper LatLng
-            weight: loc.count, // Should be a number
-          }));
-          console.log(heatmapFormattedData); // Log to check
-          setHeatmapData(heatmapFormattedData);
+          setHeatmapData(response.data.blogs.map(loc => ({
+            location: new window.google.maps.LatLng(loc.latitude, loc.longitude),
+            weight: loc.count,
+          })));
 
           if (mapRef.current) {
             const bounds = new window.google.maps.LatLngBounds();
@@ -66,7 +59,7 @@ const Mapfound = ({ timePeriod }) => {
             mapRef.current.fitBounds(bounds);
           }
         } else {
-          setHeatmapData([]); // Reset if no data
+          setHeatmapData([]); // ถ้าไม่มีข้อมูลให้ reset heatmapData
         }
       } catch (error) {
         console.error('Error fetching all locations for heatmap:', error);
@@ -108,9 +101,7 @@ const Mapfound = ({ timePeriod }) => {
         }}
       />
 
-      
-  
-      {/* Display markers for blogs */}
+      {/* แสดง markers สำหรับ blogs */}
       {blogs.map((blog, index) => (
         <Marker
           key={index}
@@ -119,6 +110,7 @@ const Mapfound = ({ timePeriod }) => {
           onClick={() => setSelectedBlog({ ...blog, rank: index + 1 })}
         />
       ))}
+
 
       {selectedBlog && (
         <InfoWindow
@@ -140,7 +132,7 @@ const Mapfound = ({ timePeriod }) => {
               }}
               onClick={() => navigate(`/locationdetail/${selectedBlog.locationname}`)}
             >
-              View all posts
+              ดูกระทู้ทั้งหมด
             </button>
           </div>
         </InfoWindow>
